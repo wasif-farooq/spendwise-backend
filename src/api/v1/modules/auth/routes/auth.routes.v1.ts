@@ -10,7 +10,7 @@ const container = Container.getInstance();
 const factory = container.resolve<AuthControllerFactory>(TOKENS.AuthControllerFactory);
 const controller = factory.create();
 
-router.post('/login', validate(loginSchema), controller.login);
-router.post('/register', validate(registerSchema), controller.register);
+router.post('/login', validate(loginSchema), controller.login.bind(controller));
+router.post('/register', validate(registerSchema), controller.register.bind(controller));
 
 export default router;

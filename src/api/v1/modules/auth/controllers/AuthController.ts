@@ -6,7 +6,7 @@ import { AuthRequestRepository } from '../repositories/AuthRequestRepository';
 export class AuthController {
     constructor(private authRequestRepository: AuthRequestRepository) { }
 
-    login = async (req: Request, res: Response) => {
+    async login(req: Request, res: Response) {
         // Delegate to Repository -> Kafka
         const result = await this.authRequestRepository.login(req.body);
 
@@ -18,7 +18,7 @@ export class AuthController {
         res.json(result);
     }
 
-    register = async (req: Request, res: Response) => {
+    async register(req: Request, res: Response) {
         // Delegate to Repository -> Kafka
         const result = await this.authRequestRepository.register(req.body);
 

@@ -9,7 +9,7 @@ const container = Container.getInstance();
 const factory = container.resolve<UserControllerFactory>(TOKENS.UserControllerFactory);
 const controller = factory.create();
 
-router.get('/profile', authMiddleware, controller.getProfile);
-router.put('/profile', authMiddleware, controller.updateProfile);
+router.get('/profile', authMiddleware, controller.getProfile.bind(controller));
+router.put('/profile', authMiddleware, controller.updateProfile.bind(controller));
 
 export default router;

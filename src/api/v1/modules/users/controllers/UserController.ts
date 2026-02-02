@@ -5,7 +5,7 @@ import { AppError } from '@core/api/utils/AppError';
 export class UserController {
     constructor(private userService: UserService) { }
 
-    getProfile = async (req: Request, res: Response) => {
+    async getProfile(req: Request, res: Response) {
         const userId = (req as any).user?.userId;
 
         if (!userId) {
@@ -16,7 +16,7 @@ export class UserController {
         res.json(user);
     }
 
-    updateProfile = async (req: Request, res: Response) => {
+    async updateProfile(req: Request, res: Response) {
         const userId = (req as any).user?.userId;
         if (!userId) {
             throw new AppError('Unauthorized', 401);
