@@ -1,0 +1,84 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "commonjs",
+        "lib": [
+            "ES2020"
+        ],
+        "outDir": "./dist",
+        "rootDir": ".",
+        "strict": true,
+        "noImplicitAny": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "resolveJsonModule": true,
+        "baseUrl": "./",
+        "paths": {
+            "@core/*": [
+                "src/core/*"
+            ],
+            "@api/*": [
+                "src/api/*"
+            ],
+            "@api/v1/*": [
+                "src/api/v1/*"
+            ],
+            "@api/v2/*": [
+                "src/api/v2/*"
+            ],
+            "@api/shared/*": [
+                "src/api/shared/*"
+            ],
+            "@modules/*": [
+                "src/modules/*"
+            ],
+            "@messaging/*": [
+                "src/messaging/*"
+            ],
+            "@database/*": [
+                "src/database/*"
+            ],
+            "@cache/*": [
+                "src/cache/*"
+            ],
+            "@server/*": [
+                "src/server/*"
+            ],
+            "@bootstrap/*": [
+                "src/bootstrap/*"
+            ],
+            "@utils/*": [
+                "src/core/utils/*"
+            ],
+            "@middleware/*": [
+                "src/core/middleware/*"
+            ],
+            "@di/*": [
+                "src/core/di/*"
+            ],
+            "@config/*": [
+                "config/*"
+            ],
+            "@tests/*": [
+                "tests/*"
+            ],
+            "@processes/*": [
+                "processes/*"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*",
+        "config/**/*",
+        "processes/**/*",
+        "scripts/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "**/*.test.ts"
+    ]
+}
