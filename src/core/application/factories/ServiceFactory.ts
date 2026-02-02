@@ -1,7 +1,7 @@
 import { RepositoryFactory } from './RepositoryFactory';
 import { RedisFactory } from '@database/factories/RedisFactory';
-import { AuthService } from '@modules/auth/application/services/AuthService';
-import { UserService } from '@modules/users/application/services/UserService';
+import { AuthService } from '@modules/auth/services/AuthService';
+import { UserService } from '@modules/users/services/UserService';
 
 export class ServiceFactory {
     private redisFactory = new RedisFactory();

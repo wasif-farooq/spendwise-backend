@@ -1,4 +1,4 @@
-import { Entity } from '../../../../api/shared/domain/entities/Entity';
+import { Entity } from '../../../api/shared/domain/entities/Entity';
 
 export enum UserRole {
     CUSTOMER = 'customer',

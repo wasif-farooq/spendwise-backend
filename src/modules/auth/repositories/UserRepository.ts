@@ -1,5 +1,5 @@
-import { IUserRepository } from '../../../domain/repositories/IUserRepository';
-import { User } from '../../../domain/models/User';
+import { IUserRepository } from './IUserRepository';
+import { User } from '../models/User';
 import { BaseRepository } from '@api/shared/repositories/BaseRepository';
 import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
 import { Inject } from '@core/di/decorators/inject.decorator';

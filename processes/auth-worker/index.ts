@@ -2,7 +2,7 @@ import { ServiceBootstrap } from '../../src/bootstrap/ServiceBootstrap';
 import { Kafka } from 'kafkajs';
 import { ConfigLoader } from '@core/config/ConfigLoader';
 import { TOKENS } from '@core/di/tokens';
-import { AuthService } from '@modules/auth/application/services/AuthService';
+import { AuthService } from '@modules/auth/services/AuthService';
 import { Container } from '@core/di/Container';
 import { AppError } from '@core/api/utils/AppError';
 

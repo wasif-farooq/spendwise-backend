@@ -1,4 +1,4 @@
-import { AuthIdentity } from '../../../domain/models/AuthIdentity';
+import { AuthIdentity } from '../models/AuthIdentity';
 
 export class AuthIdentityMapper {
     public static toDomain(row: any): AuthIdentity {

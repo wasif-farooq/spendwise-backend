@@ -1,5 +1,5 @@
 import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
-import { AuthIdentity } from '../../../../domain/models/AuthIdentity';
+import { AuthIdentity } from '../../models/AuthIdentity';
 import knex from 'knex';
 
 const qb = knex({ client: 'pg' });

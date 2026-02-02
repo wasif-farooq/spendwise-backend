@@ -1,5 +1,5 @@
 import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
-import { User } from '../../../../domain/models/User';
+import { User } from '../../models/User';
 import knex from 'knex';
 
 const qb = knex({ client: 'pg' });

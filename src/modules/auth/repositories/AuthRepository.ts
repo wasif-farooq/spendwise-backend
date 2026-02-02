@@ -1,5 +1,5 @@
-import { IAuthRepository } from '../../../domain/repositories/IAuthRepository';
-import { AuthIdentity } from '../../../domain/models/AuthIdentity';
+import { IAuthRepository } from './IAuthRepository';
+import { AuthIdentity } from '../models/AuthIdentity';
 import { BaseRepository } from '@api/shared/repositories/BaseRepository';
 import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
 import { Inject } from '@core/di/decorators/inject.decorator';

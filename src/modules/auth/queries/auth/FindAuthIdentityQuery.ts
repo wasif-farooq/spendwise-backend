@@ -1,5 +1,5 @@
 import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
-import { AuthIdentity } from '../../../../domain/models/AuthIdentity';
+import { AuthIdentity } from '../../models/AuthIdentity';
 import { AuthIdentityMapper } from '../../mappers/AuthIdentityMapper';
 import knex from 'knex';
 

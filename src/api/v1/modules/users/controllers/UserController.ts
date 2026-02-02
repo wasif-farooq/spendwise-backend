@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserService } from '@modules/users/application/services/UserService';
+import { UserService } from '@modules/users/services/UserService';
 import { AppError } from '@core/api/utils/AppError';
 
 export class UserController {

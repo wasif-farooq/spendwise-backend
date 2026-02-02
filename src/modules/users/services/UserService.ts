@@ -1,7 +1,7 @@
 import { Inject } from '@core/di/decorators/inject.decorator';
 import { TOKENS } from '@core/di/tokens';
-import { IUserRepository } from '../../../auth/domain/repositories/IUserRepository';
-import { User } from '../../../auth/domain/models/User';
+import { IUserRepository } from '../../auth/repositories/IUserRepository';
+import { User } from '../../auth/models/User';
 
 export class UserService {
     constructor(

@@ -1,9 +1,9 @@
 import { Inject } from '@core/di/decorators/inject.decorator';
 import { TOKENS } from '@core/di/tokens';
-import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { IAuthRepository } from '../../domain/repositories/IAuthRepository';
-import { User } from '../../domain/models/User';
-import { AuthIdentity } from '../../domain/models/AuthIdentity';
+import { IUserRepository } from '../repositories/IUserRepository';
+import { IAuthRepository } from '../repositories/IAuthRepository';
+import { User } from '../models/User';
+import { AuthIdentity } from '../models/AuthIdentity';
 import { AppError } from '@core/api/utils/AppError';
 import { LoginDto, RegisterDto } from '../dto/auth.dto';
 import { Password } from '@api/shared/domain/value-objects/Password';

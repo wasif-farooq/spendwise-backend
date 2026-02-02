@@ -1,23 +1,23 @@
 import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
-import { User } from '../../../../domain/models/User';
+import { User } from '../../models/User';
 import { UserMapper } from '../../mappers/UserMapper';
 import knex from 'knex';
 
 const qb = knex({ client: 'pg' });
 
 /**
- * Query to find a User by their email address.
+ * Query to find a User by their unique ID.
  */
-export class FindUserByEmailQuery {
+export class FindUserByIdQuery {
     constructor(private db: DatabaseFacade) { }
 
     /**
      * Executes the query.
-     * @param email The email to search for.
+     * @param id The User ID.
      * @returns The User entity if found, otherwise null.
      */
-    async execute(email: string): Promise<User | null> {
-        const { sql, bindings } = qb('users').where({ email }).toSQL().toNative();
+    async execute(id: string): Promise<User | null> {
+        const { sql, bindings } = qb('users').where({ id }).toSQL().toNative();
 
         const res = await this.db.query(sql, bindings as any[]);
 
