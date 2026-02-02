@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import authRoutesV1 from '../../../api/v1/modules/auth/routes/auth.routes.v1';
-import userRoutesV1 from '../../../api/v1/modules/users/routes/user.routes.v1';
+import authRoutesV1 from '../../../api/v1/modules/auth/routes/auth.routes';
+import userRoutesV1 from '../../../api/v1/modules/users/routes/user.routes';
 
 export class ApiRouter {
     private router: Router;

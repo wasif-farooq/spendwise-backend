@@ -5,7 +5,7 @@ import { IAuthRepository } from '../../domain/repositories/IAuthRepository';
 import { User } from '../../domain/models/User';
 import { AuthIdentity } from '../../domain/models/AuthIdentity';
 import { AppError } from '@core/api/utils/AppError';
-import { LoginDto, RegisterDto } from '../../api/dto/auth.dto';
+import { LoginDto, RegisterDto } from '../dto/auth.dto';
 import { Password } from '@api/shared/domain/value-objects/Password';
 import { Email } from '@api/shared/domain/value-objects/Email';
 import jwt from 'jsonwebtoken';

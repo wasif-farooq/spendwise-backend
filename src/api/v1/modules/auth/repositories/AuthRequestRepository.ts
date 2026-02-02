@@ -1,5 +1,5 @@
 import { KafkaRequestReply } from '@messaging/implementations/kafka/KafkaRequestReply';
-import { LoginDto, RegisterDto } from '@modules/auth/api/dto/auth.dto';
+import { LoginDto, RegisterDto } from '@modules/auth/application/dto/auth.dto';
 
 export class AuthRequestRepository {
     private rpcClient: KafkaRequestReply;
