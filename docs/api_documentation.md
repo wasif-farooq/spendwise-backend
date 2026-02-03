@@ -59,14 +59,40 @@ This document outlines the API endpoints available in the SpendWise Backend. All
 
 ## RBAC Permissions
 
-The following permissions are available for defining custom roles:
+The following permissions are available for defining custom roles. A role acts as a collection of these granular permissions.
 
 - `*`: Full access (Super Admin)
-- `org:update`: Can update organization settings.
-- `org:delete`: Can delete the organization.
-- `member:manage`: Can invite, remove, and update members/roles.
-- `role:read`: Can view roles.
-- `role:manage`: Can create, update, and delete roles.
+
+**Dashboard & General**
+- `dashboard:view`: View the dashboard.
+
+**Organization Management**
+- `organization:update`: Update organization details.
+- `organization:delete`: Delete the organization.
+
+**Member Management**
+- `members:view`: View list of members.
+- `members:create`: Invite new members.
+- `members:delete`: Remove members.
+- `members:edit`: Assign roles to members.
+
+**Role Management**
+- `roles:view`: View available roles.
+- `roles:edit`: Update role permissions.
+- `roles:create`: Create new roles.
+- `roles:delete`: Delete roles.
+
+**Transactions & Billing**
+- `transactions:view`: View transactions.
+- `transactions:create`: Create transactions.
+- `transactions:edit`: Edit transactions.
+- `transactions:delete`: Delete transactions.
+- `billing:view`: View billing information.
+- `billing:edit`: Manage billing settings.
+- `accounts:view`: View linked accounts.
+- `accounts:create`: Link new accounts.
+- `accounts:edit`: Manage linked accounts (access).
+- `accounts:delete`: Remove linked accounts.
 
 ## Error Responses
 

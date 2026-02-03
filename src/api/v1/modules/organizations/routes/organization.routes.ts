@@ -16,16 +16,16 @@ const controller = factory.create();
 router.use(requireAuth); // Protect all routes
 
 router.get('/', controller.list.bind(controller));
-router.put('/:id', requirePermission('org:update'), controller.update.bind(controller));
-router.delete('/:id', requirePermission('org:delete'), controller.delete.bind(controller));
+router.put('/:id', requirePermission('organization:update'), controller.update.bind(controller));
+router.delete('/:id', requirePermission('organization:delete'), controller.delete.bind(controller));
 
 router.get('/:id/members', controller.getMembers.bind(controller));
-router.post('/:id/members/invite', requirePermission('member:manage'), controller.inviteMember.bind(controller));
-router.delete('/:id/members/:memberId', requirePermission('member:manage'), controller.removeMember.bind(controller));
-router.put('/:id/members/:memberId/role', requirePermission('member:manage'), controller.assignRole.bind(controller));
+router.post('/:id/members/invite', requirePermission('members:create'), controller.inviteMember.bind(controller));
+router.delete('/:id/members/:memberId', requirePermission('members:delete'), controller.removeMember.bind(controller));
+router.put('/:id/members/:memberId/role', requirePermission('members:edit'), controller.assignRole.bind(controller));
 
-router.get('/:id/roles', requirePermission('role:read'), controller.getRoles.bind(controller));
-router.put('/:id/roles/:roleId', requirePermission('role:manage'), controller.updateRole.bind(controller));
-router.delete('/:id/roles/:roleId', requirePermission('role:manage'), controller.deleteRole.bind(controller));
+router.get('/:id/roles', requirePermission('roles:view'), controller.getRoles.bind(controller));
+router.put('/:id/roles/:roleId', requirePermission('roles:edit'), controller.updateRole.bind(controller));
+router.delete('/:id/roles/:roleId', requirePermission('roles:delete'), controller.deleteRole.bind(controller));
 
 export default router;

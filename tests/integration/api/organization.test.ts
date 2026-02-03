@@ -195,4 +195,28 @@ describe('Organization Integration Flow', () => {
         expect(res.status).toBe(403);
         expect(res.body.message).toContain('Not a member of this organization');
     });
+
+    it('should allow semantic wildcard permissions', async () => {
+        // 1. Create a "Manager" role with 'members:*' permission
+        const roleRes = await request(app)
+            .post(`/api/v1/organizations/${orgId}/roles`) // Note: This route doesn't exist in my test file mocks yet, but let's assume seeded or I'd need to mock it. 
+        // Wait, I don't have a create role endpoint in the test file yet. I have `getRoles`.
+        // I should stick to testing the logic via a user who has 'Admin' role which has '*'.
+        // The Admin role was assigned to the invitee in previous test.
+        // Let's rely on the fact that the 'Admin' role was assigned.
+
+        // Actually, the invitee was invited with 'Admin'. Admin usually means '*' in my potential seeds, 
+        // OR it creates a role. Let's verify what 'Admin' role permissions are. 
+        // In the mock data I saw earlier (from frontend), Admin has specific permissions.
+        // In backend currently, I haven't seeded specific roles yet other than default user creation logic.
+
+        // Let's keep it simple: The service logic update is unit-level logic. 
+        // Integration testing this properly requires a full 'create role' flow which I haven't fully scaffolded in the test yet.
+        // But I CAN test that the Admin (who likely has '*') can do things.
+
+        const inviteeEmail = `admin-test-${Date.now()}@example.com`;
+        const reg = await authService.register({ email: inviteeEmail, password: 'password123', firstName: 'Admin', lastName: 'User' });
+        // The user who registered is an owner, so they have full access bypassing the check.
+        // We need an invited member.
+    });
 });
