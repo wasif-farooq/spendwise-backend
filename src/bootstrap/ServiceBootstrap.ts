@@ -11,6 +11,7 @@ import { AuthControllerFactory } from '@core/application/factories/AuthControlle
 import { OrganizationControllerFactory } from '@core/application/factories/OrganizationControllerFactory';
 import { UserControllerFactory } from '@core/application/factories/UserControllerFactory';
 import { TOKENS } from '@core/di/tokens';
+import { FeatureFlagControllerFactory } from '@core/application/factories/FeatureFlagControllerFactory';
 
 export class ServiceBootstrap {
     private static instance: ServiceBootstrap;
@@ -64,6 +65,9 @@ export class ServiceBootstrap {
             const organizationControllerFactory = new OrganizationControllerFactory(serviceFactory);
             this.container.registerInstance(TOKENS.OrganizationControllerFactory, organizationControllerFactory);
 
+            const featureFlagControllerFactory = new FeatureFlagControllerFactory(serviceFactory);
+            this.container.registerInstance(TOKENS.FeatureFlagControllerFactory, featureFlagControllerFactory);
+
             const userPreferencesService = serviceFactory.createUserPreferencesService();
             this.container.registerInstance(TOKENS.UserPreferencesService, userPreferencesService);
 
@@ -75,6 +79,9 @@ export class ServiceBootstrap {
 
             const userService = serviceFactory.createUserService();
             this.container.registerInstance(TOKENS.UserService, userService);
+
+            const featureFlagService = serviceFactory.createFeatureFlagService();
+            this.container.registerInstance(TOKENS.FeatureFlagService, featureFlagService);
 
 
             // Connect Infrastructure

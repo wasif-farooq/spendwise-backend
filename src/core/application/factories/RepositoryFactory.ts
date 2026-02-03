@@ -7,6 +7,7 @@ import { OrganizationRepository } from '@modules/organizations/repositories/Orga
 import { OrganizationRoleRepository } from '@modules/organizations/repositories/OrganizationRoleRepository';
 import { OrganizationMembersRepository } from '@modules/organizations/repositories/OrganizationMembersRepository';
 import { UserPreferencesRepository } from '@modules/users/repositories/UserPreferencesRepository';
+import { FeatureFlagRepository } from '@modules/feature-flags/repositories/FeatureFlagRepository';
 
 
 export class RepositoryFactory {
@@ -34,5 +35,9 @@ export class RepositoryFactory {
 
     createUserPreferencesRepository(): UserPreferencesRepository {
         return new UserPreferencesRepository(this.db);
+    }
+
+    createFeatureFlagRepository(): FeatureFlagRepository {
+        return new FeatureFlagRepository(this.db);
     }
 }

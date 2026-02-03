@@ -6,6 +6,7 @@ import { Container } from '@core/di/Container';
 import { AuthService } from '@modules/auth/services/AuthService';
 import { UserService } from '@modules/users/services/UserService';
 import { OrganizationService } from '@modules/organizations/services/OrganizationService';
+import { FeatureFlagService } from '@modules/feature-flags/services/FeatureFlagService';
 import { AppError } from '@core/api/utils/AppError';
 
 // Consolidate Worker Logic
@@ -34,6 +35,7 @@ const startWorker = async () => {
     const authService = serviceFactory.createAuthService() as AuthService;
     const userService = serviceFactory.createUserService() as UserService;
     const organizationService = serviceFactory.createOrganizationService() as OrganizationService;
+    const featureFlagService = serviceFactory.createFeatureFlagService() as FeatureFlagService;
 
     console.log('Unified Worker Listening...');
 
@@ -64,6 +66,9 @@ const startWorker = async () => {
     await consumer.subscribe({ topic: 'organization.service.update-role', fromBeginning: false });
     await consumer.subscribe({ topic: 'organization.service.assign-role', fromBeginning: false });
     await consumer.subscribe({ topic: 'organization.service.delete-role', fromBeginning: false });
+
+    // Subscribe to Feature Flag Topics
+    await consumer.subscribe({ topic: 'feature-flags.service.get-all', fromBeginning: false });
 
     await consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
@@ -151,6 +156,12 @@ const startWorker = async () => {
                 } else if (topic === 'organization.service.delete-role') {
                     console.log(`[Org] Processing DeleteRole for ${correlationId}`);
                     result = await organizationService.deleteRole(payload.orgId, payload.userId, payload.roleId);
+                }
+
+                // --- Feature Flag Handling ---
+                else if (topic === 'feature-flags.service.get-all') {
+                    console.log(`[FeatureFlags] Processing GetAll for ${correlationId}`);
+                    result = await featureFlagService.getAllFlags();
                 }
 
                 // Reply Success

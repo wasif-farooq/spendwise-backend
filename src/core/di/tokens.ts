@@ -17,4 +17,7 @@ export const TOKENS = {
     UserPreferencesService: 'UserPreferencesService',
     OrganizationService: 'OrganizationService',
     OrganizationControllerFactory: 'OrganizationControllerFactory',
+    FeatureFlagRepository: 'FeatureFlagRepository',
+    FeatureFlagService: 'FeatureFlagService',
+    FeatureFlagControllerFactory: 'FeatureFlagControllerFactory',
 };

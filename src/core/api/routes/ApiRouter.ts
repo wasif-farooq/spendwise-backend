@@ -3,6 +3,7 @@ import authRoutesV1 from '../../../api/v1/modules/auth/routes/auth.routes';
 import userRoutesV1 from '../../../api/v1/modules/users/routes/user.routes';
 import organizationRoutesV1 from '../../../api/v1/modules/organizations/routes/organization.routes';
 import settingsRoutesV1 from '../../../api/v1/modules/settings/settings.routes';
+import featureFlagsRoutesV1 from '../../../api/v1/modules/feature-flags/routes/feature-flags.routes';
 
 
 export class ApiRouter {
@@ -19,6 +20,7 @@ export class ApiRouter {
         this.router.use('/v1/users', userRoutesV1);
         this.router.use('/v1/organizations', organizationRoutesV1);
         this.router.use('/v1/settings', settingsRoutesV1);
+        this.router.use('/v1/feature-flags', featureFlagsRoutesV1);
 
         // V2 Routes could go here
         // this.router.use('/v2/auth', authRoutesV2);

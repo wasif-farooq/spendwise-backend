@@ -3,6 +3,7 @@ import { RedisFactory } from '@database/factories/RedisFactory';
 import { AuthService } from '@modules/auth/services/AuthService';
 import { UserService } from '@modules/users/services/UserService';
 import { UserPreferencesService } from '@modules/users/services/UserPreferencesService';
+import { FeatureFlagService } from '@modules/feature-flags/services/FeatureFlagService';
 import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
 
 
@@ -47,6 +48,12 @@ export class ServiceFactory {
     createUserPreferencesService(): UserPreferencesService {
         return new UserPreferencesService(
             this.repositoryFactory.createUserPreferencesRepository()
+        );
+    }
+
+    createFeatureFlagService(): FeatureFlagService {
+        return new FeatureFlagService(
+            this.repositoryFactory.createFeatureFlagRepository()
         );
     }
 }
