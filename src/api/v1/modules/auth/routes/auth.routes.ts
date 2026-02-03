@@ -3,6 +3,7 @@ import { AuthControllerFactory } from '@core/application/factories/AuthControlle
 import { Container } from '@core/di/Container';
 import { TOKENS } from '@core/di/tokens';
 import { validate } from '@core/api/middleware/validate.middleware';
+import { requireAuth } from '@core/api/middleware/auth.middleware';
 import {
     registerSchema,
     loginSchema,
@@ -20,6 +21,7 @@ const container = Container.getInstance();
 const factory = container.resolve<AuthControllerFactory>(TOKENS.AuthControllerFactory);
 const controller = factory.create();
 
+router.get('/me', requireAuth, controller.getMe.bind(controller));
 router.post('/login', validate(loginSchema), controller.login.bind(controller));
 router.post('/register', validate(registerSchema), controller.register.bind(controller));
 

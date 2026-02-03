@@ -9,6 +9,7 @@ This document outlines the API endpoints available in the SpendWise Backend. All
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/login` | Authenticate user and get JWT token. | No |
+| `GET` | `/me` | Get current authenticated user details. | Yes (Bearer Token) |
 | `POST` | `/register` | Register a new user and create default organization. | No |
 | `POST` | `/verify-email` | Verify user email address with code. | No |
 | `POST` | `/verify-2fa` | Verify 2FA code during login. | No |

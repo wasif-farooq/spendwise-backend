@@ -89,6 +89,14 @@ class MockAuthRequestRepository extends AuthRequestRepository {
             return { error: err.message, statusCode: err.statusCode || 400 };
         }
     }
+
+    async getMe(userId: string) {
+        try {
+            return await this.authService.getUserById(userId);
+        } catch (err: any) {
+            return { error: err.message, statusCode: err.statusCode || 404 };
+        }
+    }
 }
 
 describe('Auth Integration Flow', () => {
@@ -166,6 +174,16 @@ describe('Auth Integration Flow', () => {
         expect(loginRes.status).toBe(200);
         expect(loginRes.body.token).toBeDefined();
         expect(loginRes.body.user.emailVerified).toBe(true);
+
+        // 5. Get Me
+        const token = loginRes.body.token;
+        const meRes = await request(app)
+            .get('/api/v1/auth/me')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(meRes.status).toBe(200);
+        expect(meRes.body.email).toBe(email);
+        expect(meRes.body.id).toBe(userId);
     });
 
     it('should setup and login with 2FA', async () => {

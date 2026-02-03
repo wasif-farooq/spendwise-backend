@@ -88,4 +88,20 @@ export class AuthController {
         }
         res.json(result);
     }
+
+    async getMe(req: Request, res: Response) {
+        // userId should be attached by requireAuth middleware
+        const userId = (req as any).user?.userId || (req as any).user?.sub;
+        if (!userId) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const result = await this.authRequestRepository.getMe(userId);
+        if (result.error) {
+            res.status(result.statusCode || 404).json({ message: result.error });
+            return;
+        }
+        res.json(result);
+    }
 }

@@ -47,6 +47,7 @@ const startWorker = async () => {
     await consumer.subscribe({ topic: 'auth.service.verify-reset-code', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.reset-password', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.verify-email', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.get-me', fromBeginning: false });
 
     // Subscribe to User Topics
     await consumer.subscribe({ topic: 'user.service.getProfile', fromBeginning: false });
@@ -104,6 +105,9 @@ const startWorker = async () => {
                 } else if (topic === 'auth.service.verify-email') {
                     console.log(`[Auth] Processing Verify Email for ${correlationId}`);
                     result = await authService.verifyEmail(payload.userId, payload.code);
+                } else if (topic === 'auth.service.get-me') {
+                    console.log(`[Auth] Processing GetMe for ${correlationId}`);
+                    result = await authService.getUserById(payload.userId);
                 }
 
                 // --- User Handling ---
