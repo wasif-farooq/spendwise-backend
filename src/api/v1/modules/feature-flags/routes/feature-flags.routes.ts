@@ -4,12 +4,12 @@ import { TOKENS } from '@core/di/tokens';
 import { FeatureFlagControllerFactory } from '@core/application/factories/FeatureFlagControllerFactory';
 
 const router = Router();
-const container = Container.getInstance();
 
-// Note: We resolve the factory here. In a real app we might want to ensure bootstrap is done.
-const factory = container.resolve<FeatureFlagControllerFactory>(TOKENS.FeatureFlagControllerFactory);
-const controller = factory.create();
-
-router.get('/', controller.getAll.bind(controller));
+router.get('/', (req, res) => {
+    const container = Container.getInstance();
+    const factory = container.resolve<FeatureFlagControllerFactory>(TOKENS.FeatureFlagControllerFactory);
+    const controller = factory.create();
+    return controller.getAll(req, res);
+});
 
 export default router;
