@@ -11,7 +11,8 @@ import {
     verifyBackupCodeSchema,
     forgotPasswordSchema,
     verifyResetCodeSchema,
-    resetPasswordSchema
+    resetPasswordSchema,
+    verifyEmailSchema
 } from '../validators/auth.validation';
 
 const router = Router();
@@ -29,5 +30,6 @@ router.post('/verify-backup-code', validate(verifyBackupCodeSchema), controller.
 router.post('/forgot-password', validate(forgotPasswordSchema), controller.forgotPassword.bind(controller));
 router.post('/verify-reset-code', validate(verifyResetCodeSchema), controller.verifyResetCode.bind(controller));
 router.post('/reset-password', validate(resetPasswordSchema), controller.resetPassword.bind(controller));
+router.post('/verify-email', validate(verifyEmailSchema), controller.verifyEmail.bind(controller));
 
 export default router;

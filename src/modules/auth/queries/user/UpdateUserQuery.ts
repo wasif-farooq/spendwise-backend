@@ -24,7 +24,13 @@ export class UpdateUserQuery {
                 status: user.status,
                 role: user.role,
                 updated_at: new Date(),
-                deleted_at: user.deletedAt
+                deleted_at: user.deletedAt,
+                email_verified: user.emailVerified,
+                email_verification_code: user.emailVerificationCode,
+                two_factor_enabled: user.twoFactorEnabled,
+                two_factor_method: user.twoFactorMethod,
+                two_factor_secret: user.twoFactorSecret,
+                backup_codes: user.backupCodes
             })
             .toSQL().toNative();
 

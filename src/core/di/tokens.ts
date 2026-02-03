@@ -15,4 +15,6 @@ export const TOKENS = {
     OrganizationMembersRepository: 'OrganizationMembersRepository',
     UserPreferencesRepository: 'UserPreferencesRepository',
     UserPreferencesService: 'UserPreferencesService',
+    OrganizationService: 'OrganizationService',
+    OrganizationControllerFactory: 'OrganizationControllerFactory',
 };

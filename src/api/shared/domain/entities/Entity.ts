@@ -16,4 +16,11 @@ export abstract class Entity<T> {
     public getProps(): T {
         return { ...this.props };
     }
+
+    public toJSON(): any {
+        return {
+            id: this._id,
+            ...this.props
+        };
+    }
 }

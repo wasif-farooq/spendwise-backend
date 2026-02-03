@@ -4,9 +4,11 @@ import { UpdateOrganizationDto, InviteMemberDto } from '@modules/organizations/d
 export class OrganizationRequestRepository {
     private rpcClient: KafkaRequestReply;
 
-    constructor() {
+    constructor(autoConnect: boolean = true) {
         this.rpcClient = new KafkaRequestReply();
-        this.rpcClient.connect().catch(err => console.error('Failed to connect RPC Client', err));
+        if (autoConnect) {
+            this.rpcClient.connect().catch(err => console.error('Failed to connect RPC Client', err));
+        }
     }
 
     async update(orgId: string, userId: string, dto: UpdateOrganizationDto) {

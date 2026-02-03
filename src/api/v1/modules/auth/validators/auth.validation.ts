@@ -57,3 +57,10 @@ export const resetPasswordSchema = z.object({
         newPassword: z.string().min(8),
     }),
 });
+
+export const verifyEmailSchema = z.object({
+    body: z.object({
+        userId: z.string().uuid(),
+        code: z.string().length(6),
+    }),
+});

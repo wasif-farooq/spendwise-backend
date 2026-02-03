@@ -8,6 +8,7 @@ import { KafkaMessageQueueFactory } from '@messaging/factories/KafkaMessageQueue
 import { RepositoryFactory } from '@core/application/factories/RepositoryFactory';
 import { ServiceFactory } from '@core/application/factories/ServiceFactory';
 import { AuthControllerFactory } from '@core/application/factories/AuthControllerFactory';
+import { OrganizationControllerFactory } from '@core/application/factories/OrganizationControllerFactory';
 import { UserControllerFactory } from '@core/application/factories/UserControllerFactory';
 import { TOKENS } from '@core/di/tokens';
 
@@ -60,8 +61,20 @@ export class ServiceBootstrap {
             const userControllerFactory = new UserControllerFactory(serviceFactory);
             this.container.registerInstance(TOKENS.UserControllerFactory, userControllerFactory);
 
+            const organizationControllerFactory = new OrganizationControllerFactory(serviceFactory);
+            this.container.registerInstance(TOKENS.OrganizationControllerFactory, organizationControllerFactory);
+
             const userPreferencesService = serviceFactory.createUserPreferencesService();
             this.container.registerInstance(TOKENS.UserPreferencesService, userPreferencesService);
+
+            const authService = serviceFactory.createAuthService();
+            this.container.registerInstance(TOKENS.AuthService, authService);
+
+            const organizationService = serviceFactory.createOrganizationService();
+            this.container.registerInstance(TOKENS.OrganizationService, organizationService);
+
+            const userService = serviceFactory.createUserService();
+            this.container.registerInstance(TOKENS.UserService, userService);
 
 
             // Connect Infrastructure

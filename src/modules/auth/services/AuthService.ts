@@ -57,6 +57,10 @@ export class AuthService {
 
         const password = await Password.create(dto.password);
 
+        // Generate verification code
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        user.setEmailVerificationCode(verificationCode);
+
         const identity = AuthIdentity.create({
             userId: user.id,
             provider: 'local',
@@ -95,7 +99,26 @@ export class AuthService {
             await this.organizationMembersRepository.create(member, { db: trx });
         });
 
+        // Mock Send Registration Email
+        console.log(`[Mock Email] Registration verification code for ${user.email}: ${verificationCode}`);
+
         return { user };
+    }
+
+    async verifyEmail(userId: string, code: string): Promise<void> {
+        const user = await this.userRepo.findById(userId);
+        if (!user) throw new AppError('User not found', 404);
+
+        if (user.emailVerified) {
+            throw new AppError('Email already verified', 400);
+        }
+
+        if (user.emailVerificationCode !== code) {
+            throw new AppError('Invalid verification code', 400);
+        }
+
+        user.verifyEmail();
+        await this.userRepo.save(user);
     }
 
     async login(dto: LoginDto): Promise<{ token?: string; user: User; requires2FA?: boolean; twoFactorMethods?: string[] }> {

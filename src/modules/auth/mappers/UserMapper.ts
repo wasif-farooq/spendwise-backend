@@ -11,7 +11,14 @@ export class UserMapper {
             role: row.role || 'customer',
             createdAt: row.created_at,
             updatedAt: row.updated_at,
-            deletedAt: row.deleted_at
+            deletedAt: row.deleted_at,
+            emailVerified: row.email_verified,
+            emailVerificationCode: row.email_verification_code,
+            emailVerifiedAt: row.email_verified_at,
+            twoFactorEnabled: row.two_factor_enabled,
+            twoFactorMethod: row.two_factor_method,
+            twoFactorSecret: row.two_factor_secret,
+            backupCodes: row.backup_codes
         }, row.id);
     }
 }

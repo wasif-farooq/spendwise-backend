@@ -4,10 +4,11 @@ import { LoginDto, RegisterDto } from '@modules/auth/dto/auth.dto';
 export class AuthRequestRepository {
     private rpcClient: KafkaRequestReply;
 
-    constructor() {
+    constructor(autoConnect: boolean = true) {
         this.rpcClient = new KafkaRequestReply();
-        // Ideally connect here or lazily
-        this.rpcClient.connect().catch(err => console.error('Failed to connect RPC Client', err));
+        if (autoConnect) {
+            this.rpcClient.connect().catch(err => console.error('Failed to connect RPC Client', err));
+        }
     }
 
     async login(dto: LoginDto) {
@@ -40,5 +41,9 @@ export class AuthRequestRepository {
 
     async resetPassword(dto: any) {
         return this.rpcClient.request('auth.service.reset-password', dto);
+    }
+
+    async verifyEmail(dto: { userId: string, code: string }) {
+        return this.rpcClient.request('auth.service.verify-email', dto);
     }
 }

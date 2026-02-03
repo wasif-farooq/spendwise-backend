@@ -24,7 +24,7 @@ export class OrganizationRoleRepository extends BaseRepository<OrganizationRole>
         return result.rows.map((row: any) => this.mapToEntity(row));
     }
 
-    private mapToEntity(row: any): OrganizationRole {
+    protected mapToEntity(row: any): OrganizationRole {
         return OrganizationRole.restore(
             {
                 name: row.name,

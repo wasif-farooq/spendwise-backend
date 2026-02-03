@@ -58,4 +58,8 @@ export class Server {
             this.logger.info(`Server started on port ${port}`);
         });
     }
+
+    public getApp(): Express {
+        return this.app;
+    }
 }

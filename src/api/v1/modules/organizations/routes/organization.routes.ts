@@ -8,9 +8,9 @@ import { OrganizationController } from '../controllers/OrganizationController';
 
 const router = Router();
 
-// Manual instantiation for now until Factory is ready/registered
-const repo = new OrganizationRequestRepository();
-const controller = new OrganizationController(repo);
+const container = Container.getInstance();
+const factory = container.resolve<any>(TOKENS.OrganizationControllerFactory);
+const controller = factory.create();
 
 router.use(requireAuth); // Protect all routes
 

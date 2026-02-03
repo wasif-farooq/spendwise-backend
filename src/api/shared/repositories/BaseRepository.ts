@@ -5,23 +5,57 @@ import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
 export abstract class BaseRepository<T> {
     constructor(protected db: DatabaseFacade, protected tableName: string) { }
 
+    private toSnakeCase(str: string): string {
+        return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    }
+
+    private mapToDb(data: any): any {
+        const mapped: any = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (key === '_id') continue;
+            mapped[this.toSnakeCase(key)] = value;
+        }
+        return mapped;
+    }
+
+    private getData(input: any): any {
+        let data: any;
+        if (typeof input.getProps === 'function') {
+            data = input.getProps();
+        } else {
+            data = input.props ? { ...input.props } : { ...input };
+        }
+
+        // Ensure ID is matched
+        if (input.id && !data.id) {
+            data.id = input.id;
+        }
+
+        return data;
+    }
+
     async findAll(options?: { db?: DatabaseFacade }): Promise<T[]> {
         const db = options?.db || this.db;
         const result = await db.query(`SELECT * FROM ${this.tableName}`);
-        return result.rows;
+        return result.rows.map((row: any) => this.mapToEntity(row));
     }
 
     async findById(id: string, options?: { db?: DatabaseFacade }): Promise<T | null> {
         const db = options?.db || this.db;
         const result = await db.query(`SELECT * FROM ${this.tableName} WHERE id = $1`, [id]);
-        return result.rows[0] || null;
+        return result.rows[0] ? this.mapToEntity(result.rows[0]) : null;
     }
 
-    async create(data: Partial<T>, options?: { db?: DatabaseFacade }): Promise<T> {
+    protected mapToEntity(row: any): T {
+        return row as T;
+    }
+
+    async create(input: any, options?: { db?: DatabaseFacade }): Promise<T> {
         const db = options?.db || this.db;
-        // Simplified insertion logic
-        const keys = Object.keys(data);
-        const values = Object.values(data);
+        const data = this.getData(input);
+        const mappedData = this.mapToDb(data);
+        const keys = Object.keys(mappedData);
+        const values = Object.values(mappedData);
         const indices = keys.map((_, i) => `$${i + 1}`).join(', ');
         const query = `INSERT INTO ${this.tableName} (${keys.join(', ')}) VALUES (${indices}) RETURNING *`;
 
@@ -29,10 +63,12 @@ export abstract class BaseRepository<T> {
         return result.rows[0];
     }
 
-    async update(id: string, data: Partial<T>, options?: { db?: DatabaseFacade }): Promise<T> {
+    async update(id: string, input: any, options?: { db?: DatabaseFacade }): Promise<T> {
         const db = options?.db || this.db;
-        const keys = Object.keys(data).filter(k => k !== 'id');
-        const values = keys.map(k => (data as any)[k]);
+        const data = this.getData(input);
+        const mappedData = this.mapToDb(data);
+        const keys = Object.keys(mappedData).filter(k => k !== 'id' && k !== 'updated_at');
+        const values = keys.map(k => mappedData[k]);
         const setClause = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
         const query = `UPDATE ${this.tableName} SET ${setClause}, updated_at = NOW() WHERE id = $1 RETURNING *`;
 
@@ -43,15 +79,14 @@ export abstract class BaseRepository<T> {
 
     async save(entity: any, options?: { db?: DatabaseFacade }): Promise<void> {
         const db = options?.db || this.db;
-        const data = entity.props ? { ...entity.props } : { ...entity };
-        const id = entity.id;
+        const data = this.getData(entity);
+        const id = entity.id || data.id;
 
         // Check if exists
         const existing = await this.findById(id, { db });
         if (existing) {
             await this.update(id, data, { db });
         } else {
-            if (id) (data as any).id = id;
             await this.create(data, { db });
         }
     }

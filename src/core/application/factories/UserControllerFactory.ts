@@ -5,7 +5,7 @@ import { UserController } from '@api/v1/modules/users/controllers/UserController
 export class UserControllerFactory {
     constructor(private serviceFactory: ServiceFactory) { }
 
-    create(): UserController {
-        return new UserController(new UserRequestRepository());
+    create(repository?: UserRequestRepository): UserController {
+        return new UserController(repository || new UserRequestRepository());
     }
 }

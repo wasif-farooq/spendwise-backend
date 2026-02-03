@@ -79,4 +79,13 @@ export class AuthController {
         }
         res.json(result);
     }
+
+    async verifyEmail(req: Request, res: Response) {
+        const result = await this.authRequestRepository.verifyEmail(req.body);
+        if (result.error) {
+            res.status(result.statusCode || 400).json({ message: result.error });
+            return;
+        }
+        res.json(result);
+    }
 }

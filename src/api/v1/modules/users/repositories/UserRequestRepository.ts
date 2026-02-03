@@ -3,9 +3,11 @@ import { KafkaRequestReply } from '@messaging/implementations/kafka/KafkaRequest
 export class UserRequestRepository {
     private rpcClient: KafkaRequestReply;
 
-    constructor() {
+    constructor(autoConnect: boolean = true) {
         this.rpcClient = new KafkaRequestReply();
-        this.rpcClient.connect().catch(err => console.error('Failed to connect RPC Client', err));
+        if (autoConnect) {
+            this.rpcClient.connect().catch(err => console.error('Failed to connect RPC Client', err));
+        }
     }
 
     async getProfile(userId: string) {

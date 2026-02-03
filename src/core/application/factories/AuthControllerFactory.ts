@@ -6,7 +6,7 @@ import { AuthRequestRepository } from '@api/v1/modules/auth/repositories/AuthReq
 export class AuthControllerFactory {
     constructor(private serviceFactory: ServiceFactory) { }
 
-    create(): AuthController {
-        return new AuthController(new AuthRequestRepository());
+    create(repository?: AuthRequestRepository): AuthController {
+        return new AuthController(repository || new AuthRequestRepository());
     }
 }

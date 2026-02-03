@@ -46,6 +46,7 @@ const startWorker = async () => {
     await consumer.subscribe({ topic: 'auth.service.forgot-password', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.verify-reset-code', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.reset-password', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.verify-email', fromBeginning: false });
 
     // Subscribe to User Topics
     await consumer.subscribe({ topic: 'user.service.getProfile', fromBeginning: false });
@@ -100,6 +101,9 @@ const startWorker = async () => {
                 } else if (topic === 'auth.service.reset-password') {
                     console.log(`[Auth] Processing Reset Password for ${correlationId}`);
                     result = await authService.resetPassword(payload.token, payload.newPassword);
+                } else if (topic === 'auth.service.verify-email') {
+                    console.log(`[Auth] Processing Verify Email for ${correlationId}`);
+                    result = await authService.verifyEmail(payload.userId, payload.code);
                 }
 
                 // --- User Handling ---

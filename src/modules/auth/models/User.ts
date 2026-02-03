@@ -21,6 +21,10 @@ export interface UserProps {
     twoFactorMethod?: 'app' | 'sms' | 'email';
     twoFactorSecret?: string;
     backupCodes?: string[];
+    // Email Verification
+    emailVerified?: boolean;
+    emailVerificationCode?: string;
+    emailVerifiedAt?: Date;
 }
 
 export class User extends Entity<UserProps> {
@@ -43,7 +47,8 @@ export class User extends Entity<UserProps> {
             createdAt: new Date(),
             updatedAt: new Date(),
             deletedAt: null,
-            twoFactorEnabled: false
+            twoFactorEnabled: false,
+            emailVerified: false
         };
         return new User(userProps, id);
     }
@@ -68,6 +73,9 @@ export class User extends Entity<UserProps> {
     get twoFactorMethod(): string | undefined { return this.props.twoFactorMethod; }
     get twoFactorSecret(): string | undefined { return this.props.twoFactorSecret; }
     get backupCodes(): string[] { return this.props.backupCodes ?? []; }
+    get emailVerified(): boolean { return this.props.emailVerified ?? false; }
+    get emailVerificationCode(): string | undefined { return this.props.emailVerificationCode; }
+    get emailVerifiedAt(): Date | undefined { return this.props.emailVerifiedAt; }
 
     public updateName(firstName: string, lastName: string) {
         this.props.firstName = firstName;
@@ -95,5 +103,17 @@ export class User extends Entity<UserProps> {
         this.props.deletedAt = new Date();
         this.props.isActive = false;
         this.props.status = 'deleted';
+    }
+
+    public setEmailVerificationCode(code: string) {
+        this.props.emailVerificationCode = code;
+        this.props.updatedAt = new Date();
+    }
+
+    public verifyEmail() {
+        this.props.emailVerified = true;
+        this.props.emailVerificationCode = undefined;
+        this.props.emailVerifiedAt = new Date();
+        this.props.updatedAt = new Date();
     }
 }
