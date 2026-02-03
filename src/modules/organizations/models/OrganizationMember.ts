@@ -3,7 +3,7 @@ import { Entity } from '@api/shared/domain/entities/Entity';
 export interface OrganizationMemberProps {
     userId: string;
     organizationId: string;
-    roleId: string;
+    roleIds: string[];
     joinedAt: Date;
 }
 
@@ -15,7 +15,7 @@ export class OrganizationMember extends Entity<OrganizationMemberProps> {
     public static create(props: {
         userId: string;
         organizationId: string;
-        roleId: string;
+        roleIds: string[];
     }, id?: string): OrganizationMember {
         const memberProps: OrganizationMemberProps = {
             ...props,
@@ -30,9 +30,15 @@ export class OrganizationMember extends Entity<OrganizationMemberProps> {
 
     get userId(): string { return this.props.userId; }
     get organizationId(): string { return this.props.organizationId; }
-    get roleId(): string { return this.props.roleId; }
+    get roleIds(): string[] { return this.props.roleIds; }
 
-    public changeRole(newRoleId: string): void {
-        this.props.roleId = newRoleId;
+    public addRole(roleId: string): void {
+        if (!this.props.roleIds.includes(roleId)) {
+            this.props.roleIds.push(roleId);
+        }
+    }
+
+    public removeRole(roleId: string): void {
+        this.props.roleIds = this.props.roleIds.filter(id => id !== roleId);
     }
 }

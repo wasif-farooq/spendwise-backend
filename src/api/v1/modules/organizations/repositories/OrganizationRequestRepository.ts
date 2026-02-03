@@ -50,4 +50,8 @@ export class OrganizationRequestRepository {
     async deleteRole(orgId: string, userId: string, roleId: string) {
         return this.rpcClient.request('organization.service.delete-role', { orgId, userId, roleId });
     }
+
+    async checkPermission(orgId: string, userId: string, permission: string) {
+        return this.rpcClient.request('organization.service.check-permission', { orgId, userId, permission });
+    }
 }

@@ -16,6 +16,15 @@ export class OrganizationRoleRepository extends BaseRepository<OrganizationRole>
         return result.rows[0] ? this.mapToEntity(result.rows[0]) : null;
     }
 
+    async findByIds(ids: string[]): Promise<OrganizationRole[]> {
+        if (ids.length === 0) return [];
+        const result = await this.db.query(
+            `SELECT * FROM ${this.tableName} WHERE id = ANY($1)`,
+            [ids]
+        );
+        return result.rows.map((row: any) => this.mapToEntity(row));
+    }
+
     async findByOrg(organizationId: string): Promise<OrganizationRole[]> {
         const result = await this.db.query(
             `SELECT * FROM ${this.tableName} WHERE organization_id = $1`,

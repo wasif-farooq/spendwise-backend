@@ -94,7 +94,7 @@ export class AuthService {
             const member = OrganizationMember.create({
                 userId: user.id,
                 organizationId: trxOrg.id,
-                roleId: trxRole.id
+                roleIds: [trxRole.id]
             });
             await this.organizationMembersRepository.create(member, { db: trx });
         });

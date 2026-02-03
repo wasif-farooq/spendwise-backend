@@ -18,7 +18,6 @@ export class OrganizationService {
     ) { }
 
     async update(orgId: string, userId: string, dto: UpdateOrganizationDto): Promise<Organization> {
-        // 1. Verify Membership & Permissions (Simplified for now: Must be owner or have Admin role)
         const member = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
         if (!member) {
             throw new AppError('Not a member of this organization', 403);
@@ -29,18 +28,13 @@ export class OrganizationService {
             throw new AppError('Organization not found', 404);
         }
 
-        // 2. Permission check: Only owner or users with Admin role can update organization details
-        if (organization.ownerId !== userId) {
-            const role = await this.organizationRoleRepository.findById(member.roleId);
-            if (!role || (role.name !== 'Admin' && !role.permissions.includes('*'))) {
-                throw new AppError('Insufficient permissions to update organization', 403);
-            }
+        // Permission check
+        const hasPermission = await this.checkPermission(orgId, userId, 'org:update');
+        if (!hasPermission) {
+            throw new AppError('Insufficient permissions to update organization', 403);
         }
 
-
-        // 2. Update
         if (dto.name) organization.changeName(dto.name);
-
         await this.organizationRepository.save(organization);
         return organization;
     }
@@ -66,7 +60,6 @@ export class OrganizationService {
         return this.organizationRepository.findByIds(orgIds);
     }
 
-
     async getMembers(orgId: string, userId: string): Promise<any[]> {
         const member = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
         if (!member) {
@@ -77,9 +70,9 @@ export class OrganizationService {
     }
 
     async inviteMember(orgId: string, userId: string, dto: InviteMemberDto): Promise<void> {
-        const requester = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
-        if (!requester) {
-            throw new AppError('Not a member of this organization', 403);
+        const hasPermission = await this.checkPermission(orgId, userId, 'member:manage');
+        if (!hasPermission) {
+            throw new AppError('Insufficient permissions to invite members', 403);
         }
 
         const userToInvite = await this.userRepository.findByEmail(dto.email);
@@ -92,111 +85,94 @@ export class OrganizationService {
             throw new AppError('User is already a member', 409);
         }
 
-        // Find Role
-        // Simplification: We need to find valid roles for this org.
-        // For now, assume 'Member' exists or create if not? 
-        // Or strictly fetch from DB.
-
-        // Find Role
         const role = await this.organizationRoleRepository.findByNameAndOrg(dto.roleName, orgId);
         if (!role) throw new AppError('Role not found', 404);
 
         const newMember = OrganizationMember.create({
             organizationId: orgId,
             userId: userToInvite.id,
-            roleId: role.id
+            roleIds: [role.id]
         });
 
         await this.organizationMembersRepository.create(newMember);
     }
 
     async removeMember(orgId: string, userId: string, memberIdToRemove: string): Promise<void> {
-        const requester = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
-        if (!requester) {
-            throw new AppError('Not a member of this organization', 403);
+        const hasPermission = await this.checkPermission(orgId, userId, 'member:manage');
+        if (!hasPermission) {
+            throw new AppError('Insufficient permissions to remove members', 403);
         }
 
         const memberToRemove = await this.organizationMembersRepository.findById(memberIdToRemove);
-        if (!memberToRemove) {
+        if (!memberToRemove || memberToRemove.organizationId !== orgId) {
             throw new AppError('Member not found', 404);
-        }
-
-        if (memberToRemove.organizationId !== orgId) {
-            throw new AppError('Member does not belong to this organization', 400);
         }
 
         await this.organizationMembersRepository.delete(memberIdToRemove);
     }
 
     async getRoles(orgId: string, userId: string): Promise<any[]> {
-        const requester = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
-        if (!requester) {
-            throw new AppError('Not a member of this organization', 403);
-        }
+        const member = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
+        if (!member) throw new AppError('Not a member of this organization', 403);
 
-        const roles = await this.organizationRoleRepository.findByOrg(orgId);
-        return roles;
+        return this.organizationRoleRepository.findByOrg(orgId);
     }
 
     async updateRole(orgId: string, userId: string, roleId: string, permissions: string[]): Promise<void> {
-        const requester = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
-        if (!requester) {
-            throw new AppError('Not a member of this organization', 403);
-        }
+        const hasPermission = await this.checkPermission(orgId, userId, 'role:manage');
+        if (!hasPermission) throw new AppError('Insufficient permissions to manage roles', 403);
 
         const role = await this.organizationRoleRepository.findById(roleId);
-        if (!role) throw new AppError('Role not found', 404);
-
-        if (role.organizationId !== orgId) throw new AppError('Role does not belong to this org', 400);
+        if (!role || role.organizationId !== orgId) throw new AppError('Role not found', 404);
 
         role.changePermissions(permissions);
         await this.organizationRoleRepository.save(role);
     }
 
     async assignRole(orgId: string, userId: string, memberId: string, roleId: string): Promise<void> {
-        const requester = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
-        if (!requester) {
-            throw new AppError('Not a member of this organization', 403);
-        }
+        const hasPermission = await this.checkPermission(orgId, userId, 'member:manage');
+        if (!hasPermission) throw new AppError('Insufficient permissions to assign roles', 403);
 
-        // Check if member exists
-        const memberIdx = await this.organizationMembersRepository.findById(memberId); // Assuming Repo has findById
-        // Note: organizationMembersRepository usually returns OrganizationMember entity
-        // We need to fetch it.
-        // My repo fetcher might be missing findById for member?
-        // Let's assume findById exists or use findByUserAndOrg if we had userId of member.
-        // But we have memberId (ID of the membership record).
+        const member = await this.organizationMembersRepository.findById(memberId);
+        if (!member || member.organizationId !== orgId) throw new AppError('Member not found', 404);
 
-        let member = await this.organizationMembersRepository.findById(memberId);
-        if (!member) throw new AppError('Member not found', 404);
-
-        if (member.organizationId !== orgId) throw new AppError('Member not in this org', 400);
-
-        // Check if role exists in org
         const role = await this.organizationRoleRepository.findById(roleId);
         if (!role || role.organizationId !== orgId) throw new AppError('Role not valid for this organization', 400);
 
-        member.changeRole(roleId);
+        member.addRole(roleId);
         await this.organizationMembersRepository.save(member);
     }
 
     async deleteRole(orgId: string, userId: string, roleId: string): Promise<void> {
-        const requester = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
-        if (!requester) {
-            throw new AppError('Not a member of this organization', 403);
-        }
+        const hasPermission = await this.checkPermission(orgId, userId, 'role:manage');
+        if (!hasPermission) throw new AppError('Insufficient permissions to delete roles', 403);
 
         const role = await this.organizationRoleRepository.findById(roleId);
         if (!role || role.organizationId !== orgId) throw new AppError('Role not found', 404);
 
-        if (role.isSystem) {
-            throw new AppError('Cannot delete system role', 400);
-        }
+        if (role.isSystem) throw new AppError('Cannot delete system role', 400);
 
         // Check if strictly assigned
+        // Note: With multiple roles, we'd need a specialized query to check if ANY member has this role in their role_ids array.
+        // For simplicity, we can do this in SQL or here if countByRole is updated.
         const assignedCount = await this.organizationMembersRepository.countByRole(roleId);
         if (assignedCount > 0) throw new AppError('Cannot delete role with assigned members', 400);
 
         await this.organizationRoleRepository.delete(roleId);
+    }
+
+    async checkPermission(orgId: string, userId: string, permission: string): Promise<boolean> {
+        const organization = await this.organizationRepository.findById(orgId);
+        if (!organization) return false;
+
+        if (organization.ownerId === userId) return true;
+
+        const member = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
+        if (!member) return false;
+
+        if (member.roleIds.length === 0) return false;
+
+        const roles = await this.organizationRoleRepository.findByIds(member.roleIds);
+        return roles.some(role => role.permissions.includes('*') || role.permissions.includes(permission));
     }
 }

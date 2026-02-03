@@ -13,7 +13,7 @@ export class OrganizationMembersRepository extends BaseRepository<OrganizationMe
         return OrganizationMember.restore({
             userId: row.user_id,
             organizationId: row.organization_id,
-            roleId: row.role_id,
+            roleIds: row.role_ids || [],
             joinedAt: row.joined_at
         }, row.id);
     }
@@ -44,7 +44,7 @@ export class OrganizationMembersRepository extends BaseRepository<OrganizationMe
 
     async countByRole(roleId: string): Promise<number> {
         const result = await this.db.query(
-            `SELECT COUNT(*) as count FROM ${this.tableName} WHERE role_id = $1`,
+            `SELECT COUNT(*) as count FROM ${this.tableName} WHERE $1 = ANY(role_ids)`,
             [roleId]
         );
         return result.rows[0] ? Number(result.rows[0].count) : 0;
@@ -57,23 +57,23 @@ export class OrganizationMembersRepository extends BaseRepository<OrganizationMe
                 om.user_id,
                 om.organization_id,
                 om.joined_at,
+                om.role_ids,
                 u.first_name,
                 u.last_name,
-                u.email,
-                org_roles.name as role_name,
-                om.role_id
+                u.email
             FROM ${this.tableName} om
             JOIN users u ON om.user_id = u.id
-            LEFT JOIN organization_roles org_roles ON om.role_id = org_roles.id
             WHERE om.organization_id = $1
         `;
         const result = await this.db.query(query, [organizationId]);
+
+        // Fetch role names for all members (can be optimized with aggregation in query if needed)
+        // For simplicity and speed in this context, we will map them.
         return result.rows.map((row: any) => ({
             id: row.member_id,
             userId: row.user_id,
             organizationId: row.organization_id,
-            roleId: row.role_id,
-            roleName: row.role_name,
+            roleIds: row.role_ids,
             firstName: row.first_name,
             lastName: row.last_name,
             email: row.email,

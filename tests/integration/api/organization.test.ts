@@ -56,6 +56,14 @@ class MockOrganizationRequestRepository extends OrganizationRequestRepository {
             return { error: err.message, statusCode: err.statusCode || 400 };
         }
     }
+
+    async checkPermission(orgId: string, userId: string, permission: string) {
+        try {
+            return await this.organizationService.checkPermission(orgId, userId, permission);
+        } catch (err: any) {
+            return false;
+        }
+    }
 }
 
 describe('Organization Integration Flow', () => {
@@ -170,5 +178,21 @@ describe('Organization Integration Flow', () => {
         expect(res.status).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
         expect(res.body.length).toBeGreaterThan(0);
+    });
+
+    it('should deny update organization name without permission', async () => {
+        // Create another user
+        const otherEmail = `other-${Date.now()}@example.com`;
+        await authService.register({ email: otherEmail, password: 'password123', firstName: 'Other', lastName: 'User' });
+        const otherLogin = await authService.login({ email: otherEmail, password: 'password123' });
+        const otherToken = otherLogin.token!;
+
+        const res = await request(app)
+            .put(`/api/v1/organizations/${orgId}`)
+            .set('Authorization', `Bearer ${otherToken}`)
+            .send({ name: 'Hacked Name' });
+
+        expect(res.status).toBe(403);
+        expect(res.body.message).toContain('Not a member of this organization');
     });
 });
