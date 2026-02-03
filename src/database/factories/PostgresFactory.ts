@@ -1,6 +1,6 @@
 import { DatabaseAbstractFactory } from '@core/application/abstract-factories/DatabaseAbstractFactory';
 import { IDatabase } from '@core/application/interfaces/IDatabase';
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import { ConfigLoader } from '@core/config/ConfigLoader';
 import { Inject } from '@core/di/decorators/inject.decorator';
 import { TOKENS } from '@core/di/tokens';
@@ -11,6 +11,33 @@ import { ILogger } from '@core/application/interfaces/ILogger';
 // For factory simplicity, defining a simple class here or creating one.
 // Let's create a PostgresDatabase class inside this factory file or separate if needed.
 // Given strict file structure, let's implement the factory to return a PostgresDatabase instance.
+
+class PostgresTransaction implements IDatabase {
+    constructor(private client: PoolClient) { }
+
+    async connect(): Promise<void> {
+        // Already connected
+    }
+
+    async disconnect(): Promise<void> {
+        // Handled by the transaction manager
+    }
+
+    async query(text: string, params?: any[]): Promise<any> {
+        return this.client.query(text, params);
+    }
+
+    isConnected(): boolean {
+        return true;
+    }
+
+    async transaction<T>(callback: (trx: IDatabase) => Promise<T>): Promise<T> {
+        // Savepoints could be implemented here for nested transactions
+        // For now, just reuse the same client
+        return callback(this);
+    }
+}
+
 
 class PostgresDatabase implements IDatabase {
     private pool: Pool;
@@ -53,6 +80,22 @@ class PostgresDatabase implements IDatabase {
 
     isConnected(): boolean {
         return this.connected;
+    }
+
+    async transaction<T>(callback: (trx: IDatabase) => Promise<T>): Promise<T> {
+        const client = await this.pool.connect();
+        try {
+            await client.query('BEGIN');
+            const trx = new PostgresTransaction(client);
+            const result = await callback(trx);
+            await client.query('COMMIT');
+            return result;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 }
 

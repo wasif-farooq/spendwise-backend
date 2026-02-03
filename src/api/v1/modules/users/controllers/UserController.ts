@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserService } from '@modules/users/services/UserService';
+import { UserRequestRepository } from '../repositories/UserRequestRepository';
 import { AppError } from '@core/api/utils/AppError';
 
 export class UserController {
-    constructor(private userService: UserService) { }
+    constructor(private userRequestRepository: UserRequestRepository) { }
 
     async getProfile(req: Request, res: Response) {
         const userId = (req as any).user?.userId;
@@ -12,7 +12,7 @@ export class UserController {
             throw new AppError('Unauthorized', 401);
         }
 
-        const user = await this.userService.getProfile(userId);
+        const user = await this.userRequestRepository.getProfile(userId);
         res.json(user);
     }
 
@@ -22,7 +22,7 @@ export class UserController {
             throw new AppError('Unauthorized', 401);
         }
 
-        const user = await this.userService.updateProfile(userId, req.body);
+        const user = await this.userRequestRepository.updateProfile(userId, req.body);
         res.json(user);
     }
 }

@@ -6,8 +6,12 @@ import { TOKENS } from '@core/di/tokens';
 export class DatabaseFacade {
     private database: IDatabase;
 
-    constructor(private factory: DatabaseAbstractFactory) {
-        this.database = this.factory.createDatabase();
+    constructor(factoryOrDb: DatabaseAbstractFactory | IDatabase) {
+        if ('createDatabase' in factoryOrDb) {
+            this.database = factoryOrDb.createDatabase();
+        } else {
+            this.database = factoryOrDb;
+        }
     }
 
     async connect(): Promise<void> {
@@ -20,6 +24,13 @@ export class DatabaseFacade {
 
     async query(text: string, params?: any[]): Promise<any> {
         return this.database.query(text, params);
+    }
+
+    async transaction<T>(callback: (trx: DatabaseFacade) => Promise<T>): Promise<T> {
+        return this.database.transaction(async (trxDb) => {
+            const trxFacade = new DatabaseFacade(trxDb);
+            return callback(trxFacade);
+        });
     }
 
     get raw() {
