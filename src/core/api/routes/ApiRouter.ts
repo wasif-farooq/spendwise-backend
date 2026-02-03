@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import authRoutesV1 from '../../../api/v1/modules/auth/routes/auth.routes';
 import userRoutesV1 from '../../../api/v1/modules/users/routes/user.routes';
+import organizationRoutesV1 from '../../../api/v1/modules/organizations/routes/organization.routes';
+import settingsRoutesV1 from '../../../api/v1/modules/settings/settings.routes';
+
 
 export class ApiRouter {
     private router: Router;
@@ -14,6 +17,8 @@ export class ApiRouter {
         // V1 Routes
         this.router.use('/v1/auth', authRoutesV1);
         this.router.use('/v1/users', userRoutesV1);
+        this.router.use('/v1/organizations', organizationRoutesV1);
+        this.router.use('/v1/settings', settingsRoutesV1);
 
         // V2 Routes could go here
         // this.router.use('/v2/auth', authRoutesV2);

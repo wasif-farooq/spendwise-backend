@@ -14,20 +14,23 @@ export class UserRepository extends BaseRepository<any> implements IUserReposito
         super(db, 'users');
     }
 
-    async save(user: User): Promise<void> {
-        const exists = await this.findById(user.id);
+    async save(user: User, options?: { db?: DatabaseFacade }): Promise<void> {
+        const db = options?.db || this.db;
+        const exists = await this.findById(user.id, { db });
         if (exists) {
-            await new UpdateUserQuery(this.db).execute(user);
+            await new UpdateUserQuery(db).execute(user);
         } else {
-            await new CreateUserQuery(this.db).execute(user);
+            await new CreateUserQuery(db).execute(user);
         }
     }
 
-    async findByEmail(email: string): Promise<User | null> {
-        return new FindUserByEmailQuery(this.db).execute(email);
+    async findByEmail(email: string, options?: { db?: DatabaseFacade }): Promise<User | null> {
+        const db = options?.db || this.db;
+        return new FindUserByEmailQuery(db).execute(email);
     }
 
-    async findById(id: string): Promise<User | null> {
-        return new FindUserByIdQuery(this.db).execute(id);
+    async findById(id: string, options?: { db?: DatabaseFacade }): Promise<User | null> {
+        const db = options?.db || this.db;
+        return new FindUserByIdQuery(db).execute(id);
     }
 }

@@ -10,4 +10,9 @@ export const TOKENS = {
     ServiceFactory: 'ServiceFactory',
     AuthControllerFactory: 'AuthControllerFactory',
     UserControllerFactory: 'UserControllerFactory',
+    OrganizationRepository: 'OrganizationRepository',
+    OrganizationRoleRepository: 'OrganizationRoleRepository',
+    OrganizationMembersRepository: 'OrganizationMembersRepository',
+    UserPreferencesRepository: 'UserPreferencesRepository',
+    UserPreferencesService: 'UserPreferencesService',
 };

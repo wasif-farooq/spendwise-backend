@@ -13,24 +13,27 @@ export class AuthRepository extends BaseRepository<any> implements IAuthReposito
         super(db, 'auth_identities');
     }
 
-    async save(identity: AuthIdentity): Promise<void> {
+    async save(identity: AuthIdentity, options?: { db?: DatabaseFacade }): Promise<void> {
         // Upsert logic simplified by checking existence using the query class
         // In a high-concurrency real app, prefer ON CONFLICT DO UPDATE
-        const finder = new FindAuthIdentityQuery(this.db);
+        const db = options?.db || this.db;
+        const finder = new FindAuthIdentityQuery(db);
         const exists = await finder.byId(identity.id);
 
         if (exists) {
-            await new UpdateAuthIdentityQuery(this.db).execute(identity);
+            await new UpdateAuthIdentityQuery(db).execute(identity);
         } else {
-            await new CreateAuthIdentityQuery(this.db).execute(identity);
+            await new CreateAuthIdentityQuery(db).execute(identity);
         }
     }
 
-    async findByUserIdAndProvider(userId: string, provider: string): Promise<AuthIdentity | null> {
-        return new FindAuthIdentityQuery(this.db).byUserIdAndProvider(userId, provider);
+    async findByUserIdAndProvider(userId: string, provider: string, options?: { db?: DatabaseFacade }): Promise<AuthIdentity | null> {
+        const db = options?.db || this.db;
+        return new FindAuthIdentityQuery(db).byUserIdAndProvider(userId, provider);
     }
 
-    async findByProviderAndSub(provider: string, sub: string): Promise<AuthIdentity | null> {
-        return new FindAuthIdentityQuery(this.db).byProviderAndSub(provider, sub);
+    async findByProviderAndSub(provider: string, sub: string, options?: { db?: DatabaseFacade }): Promise<AuthIdentity | null> {
+        const db = options?.db || this.db;
+        return new FindAuthIdentityQuery(db).byProviderAndSub(provider, sub);
     }
 }

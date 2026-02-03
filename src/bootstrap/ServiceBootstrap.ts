@@ -51,7 +51,7 @@ export class ServiceBootstrap {
             const repoFactory = new RepositoryFactory(dbFacade);
             this.container.registerInstance(TOKENS.RepositoryFactory, repoFactory);
 
-            const serviceFactory = new ServiceFactory(repoFactory);
+            const serviceFactory = new ServiceFactory(repoFactory, dbFacade);
             this.container.registerInstance(TOKENS.ServiceFactory, serviceFactory);
 
             const authControllerFactory = new AuthControllerFactory(serviceFactory);
@@ -59,6 +59,10 @@ export class ServiceBootstrap {
 
             const userControllerFactory = new UserControllerFactory(serviceFactory);
             this.container.registerInstance(TOKENS.UserControllerFactory, userControllerFactory);
+
+            const userPreferencesService = serviceFactory.createUserPreferencesService();
+            this.container.registerInstance(TOKENS.UserPreferencesService, userPreferencesService);
+
 
             // Connect Infrastructure
             // await dbFacade.connect(); // Optional based on service

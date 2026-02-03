@@ -3,7 +3,16 @@ import { AuthControllerFactory } from '@core/application/factories/AuthControlle
 import { Container } from '@core/di/Container';
 import { TOKENS } from '@core/di/tokens';
 import { validate } from '@core/api/middleware/validate.middleware';
-import { registerSchema, loginSchema } from '../validators/auth.validation';
+import {
+    registerSchema,
+    loginSchema,
+    verify2faSchema,
+    resend2faSchema,
+    verifyBackupCodeSchema,
+    forgotPasswordSchema,
+    verifyResetCodeSchema,
+    resetPasswordSchema
+} from '../validators/auth.validation';
 
 const router = Router();
 const container = Container.getInstance();
@@ -12,5 +21,13 @@ const controller = factory.create();
 
 router.post('/login', validate(loginSchema), controller.login.bind(controller));
 router.post('/register', validate(registerSchema), controller.register.bind(controller));
+
+router.post('/verify-2fa', validate(verify2faSchema), controller.verify2FA.bind(controller));
+router.post('/resend-2fa', validate(resend2faSchema), controller.resend2FA.bind(controller));
+router.post('/verify-backup-code', validate(verifyBackupCodeSchema), controller.verifyBackupCode.bind(controller));
+
+router.post('/forgot-password', validate(forgotPasswordSchema), controller.forgotPassword.bind(controller));
+router.post('/verify-reset-code', validate(verifyResetCodeSchema), controller.verifyResetCode.bind(controller));
+router.post('/reset-password', validate(resetPasswordSchema), controller.resetPassword.bind(controller));
 
 export default router;

@@ -3,6 +3,11 @@ import { IUserRepository } from '@modules/auth/repositories/IUserRepository';
 import { IAuthRepository } from '@modules/auth/repositories/IAuthRepository';
 import { UserRepository } from '@modules/auth/repositories/UserRepository';
 import { AuthRepository } from '@modules/auth/repositories/AuthRepository';
+import { OrganizationRepository } from '@modules/organizations/repositories/OrganizationRepository';
+import { OrganizationRoleRepository } from '@modules/organizations/repositories/OrganizationRoleRepository';
+import { OrganizationMembersRepository } from '@modules/organizations/repositories/OrganizationMembersRepository';
+import { UserPreferencesRepository } from '@modules/users/repositories/UserPreferencesRepository';
+
 
 export class RepositoryFactory {
     constructor(private db: DatabaseFacade) { }
@@ -13,5 +18,21 @@ export class RepositoryFactory {
 
     createAuthRepository(): IAuthRepository {
         return new AuthRepository(this.db);
+    }
+
+    createOrganizationRepository(): OrganizationRepository {
+        return new OrganizationRepository(this.db);
+    }
+
+    createOrganizationRoleRepository(): OrganizationRoleRepository {
+        return new OrganizationRoleRepository(this.db);
+    }
+
+    createOrganizationMembersRepository(): OrganizationMembersRepository {
+        return new OrganizationMembersRepository(this.db);
+    }
+
+    createUserPreferencesRepository(): UserPreferencesRepository {
+        return new UserPreferencesRepository(this.db);
     }
 }

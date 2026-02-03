@@ -16,6 +16,11 @@ export interface UserProps {
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;
+    // 2FA Properties
+    twoFactorEnabled?: boolean;
+    twoFactorMethod?: 'app' | 'sms' | 'email';
+    twoFactorSecret?: string;
+    backupCodes?: string[];
 }
 
 export class User extends Entity<UserProps> {
@@ -23,7 +28,13 @@ export class User extends Entity<UserProps> {
         super(props, id);
     }
 
-    public static create(props: { email: string; firstName?: string; lastName?: string; role?: UserRole; status?: string }, id?: string): User {
+    public static create(props: {
+        email: string;
+        firstName?: string;
+        lastName?: string;
+        role?: UserRole;
+        status?: string
+    }, id?: string): User {
         const userProps: UserProps = {
             ...props,
             isActive: true,
@@ -31,7 +42,8 @@ export class User extends Entity<UserProps> {
             role: props.role || UserRole.CUSTOMER,
             createdAt: new Date(),
             updatedAt: new Date(),
-            deletedAt: null
+            deletedAt: null,
+            twoFactorEnabled: false
         };
         return new User(userProps, id);
     }
@@ -51,9 +63,31 @@ export class User extends Entity<UserProps> {
     get updatedAt(): Date { return this.props.updatedAt; }
     get deletedAt(): Date | undefined | null { return this.props.deletedAt; }
 
+    // 2FA Getters
+    get twoFactorEnabled(): boolean { return this.props.twoFactorEnabled ?? false; }
+    get twoFactorMethod(): string | undefined { return this.props.twoFactorMethod; }
+    get twoFactorSecret(): string | undefined { return this.props.twoFactorSecret; }
+    get backupCodes(): string[] { return this.props.backupCodes ?? []; }
+
     public updateName(firstName: string, lastName: string) {
         this.props.firstName = firstName;
         this.props.lastName = lastName;
+        this.props.updatedAt = new Date();
+    }
+
+    public enable2FA(method: 'app' | 'sms' | 'email', secret: string, backupCodes: string[]) {
+        this.props.twoFactorEnabled = true;
+        this.props.twoFactorMethod = method;
+        this.props.twoFactorSecret = secret;
+        this.props.backupCodes = backupCodes;
+        this.props.updatedAt = new Date();
+    }
+
+    public disable2FA() {
+        this.props.twoFactorEnabled = false;
+        this.props.twoFactorMethod = undefined;
+        this.props.twoFactorSecret = undefined;
+        this.props.backupCodes = undefined;
         this.props.updatedAt = new Date();
     }
 

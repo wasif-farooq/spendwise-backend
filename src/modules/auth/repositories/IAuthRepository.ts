@@ -1,7 +1,9 @@
 import { AuthIdentity } from '../models/AuthIdentity';
 
+import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
+
 export interface IAuthRepository {
-    save(identity: AuthIdentity): Promise<void>;
-    findByUserIdAndProvider(userId: string, provider: string): Promise<AuthIdentity | null>;
-    findByProviderAndSub(provider: string, sub: string): Promise<AuthIdentity | null>;
+    save(identity: AuthIdentity, options?: { db?: DatabaseFacade }): Promise<void>;
+    findByUserIdAndProvider(userId: string, provider: string, options?: { db?: DatabaseFacade }): Promise<AuthIdentity | null>;
+    findByProviderAndSub(provider: string, sub: string, options?: { db?: DatabaseFacade }): Promise<AuthIdentity | null>;
 }

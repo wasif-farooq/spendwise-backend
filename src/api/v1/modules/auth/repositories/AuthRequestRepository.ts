@@ -17,4 +17,28 @@ export class AuthRequestRepository {
     async register(dto: RegisterDto) {
         return this.rpcClient.request('auth.service.register', dto);
     }
+
+    async verify2FA(dto: any) {
+        return this.rpcClient.request('auth.service.verify-2fa', dto);
+    }
+
+    async resend2FA(dto: any) {
+        return this.rpcClient.request('auth.service.resend-2fa', dto);
+    }
+
+    async verifyBackupCode(dto: any) {
+        return this.rpcClient.request('auth.service.verify-backup-code', dto);
+    }
+
+    async forgotPassword(dto: any) {
+        return this.rpcClient.request('auth.service.forgot-password', dto);
+    }
+
+    async verifyResetCode(dto: any) {
+        return this.rpcClient.request('auth.service.verify-reset-code', dto);
+    }
+
+    async resetPassword(dto: any) {
+        return this.rpcClient.request('auth.service.reset-password', dto);
+    }
 }
