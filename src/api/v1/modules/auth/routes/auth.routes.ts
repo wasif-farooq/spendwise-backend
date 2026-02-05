@@ -24,6 +24,7 @@ const controller = factory.create();
 router.get('/me', requireAuth, controller.getMe.bind(controller));
 router.post('/login', validate(loginSchema), controller.login.bind(controller));
 router.post('/register', validate(registerSchema), controller.register.bind(controller));
+router.post('/refresh', controller.refresh.bind(controller));
 
 router.post('/verify-2fa', validate(verify2faSchema), controller.verify2FA.bind(controller));
 router.post('/resend-2fa', validate(resend2faSchema), controller.resend2FA.bind(controller));

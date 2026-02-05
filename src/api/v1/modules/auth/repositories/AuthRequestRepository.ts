@@ -50,4 +50,8 @@ export class AuthRequestRepository {
     async getMe(userId: string) {
         return this.rpcClient.request('auth.service.get-me', { userId });
     }
+
+    async refresh(dto: { refreshToken: string }) {
+        return this.rpcClient.request('auth.service.refresh', dto);
+    }
 }

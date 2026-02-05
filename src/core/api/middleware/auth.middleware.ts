@@ -5,6 +5,11 @@ import { ConfigLoader } from '@core/config/ConfigLoader';
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 
+    console.log(`[AuthMiddleware] Received Header: ${authHeader ? 'Present' : 'Missing'}`);
+    if (authHeader) {
+        console.log(`[AuthMiddleware] Token (first 20 chars): ${authHeader.substring(0, 20)}...`);
+    }
+
     if (!authHeader) {
         return res.status(401).json({ message: 'No token provided' });
     }

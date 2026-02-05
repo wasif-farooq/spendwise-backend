@@ -104,4 +104,13 @@ export class AuthController {
         }
         res.json(result);
     }
+
+    async refresh(req: Request, res: Response) {
+        const result = await this.authRequestRepository.refresh(req.body);
+        if (result.error) {
+            res.status(result.statusCode || 401).json({ message: result.error });
+            return;
+        }
+        res.json(result);
+    }
 }

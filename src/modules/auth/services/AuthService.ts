@@ -105,7 +105,7 @@ export class AuthService {
         return { user };
     }
 
-    async verifyEmail(emailStr: string, code: string): Promise<void> {
+    async verifyEmail(emailStr: string, code: string): Promise<{ success: boolean; message: string }> {
         const email = Email.create(emailStr);
         const user = await this.userRepo.findByEmail(email.raw);
         if (!user) throw new AppError('User not found', 404);
@@ -120,9 +120,14 @@ export class AuthService {
 
         user.verifyEmail();
         await this.userRepo.save(user);
+
+        return {
+            success: true,
+            message: 'Email verified successfully'
+        };
     }
 
-    async login(dto: LoginDto): Promise<{ token?: string; user: User; requires2FA?: boolean; twoFactorMethods?: string[] }> {
+    async login(dto: LoginDto): Promise<{ token?: string; refreshToken?: string; user: User; requires2FA?: boolean; twoFactorMethods?: string[] }> {
         const email = Email.create(dto.email);
 
         const user = await this.userRepo.findByEmail(email.raw);
@@ -151,16 +156,17 @@ export class AuthService {
             };
         }
 
-        // Generate Token
-        const token = this.generateToken(user);
+        // Generate Tokens
+        const token = this.generateAccessToken(user);
+        const refreshToken = this.generateRefreshToken(user);
 
         identity.updateLastLogin();
         await this.authRepo.save(identity);
 
-        return { token, user };
+        return { token, refreshToken, user };
     }
 
-    async verify2FA(userId: string, code: string, method?: string): Promise<{ token: string; user: User }> {
+    async verify2FA(userId: string, code: string, method?: string): Promise<{ token: string; refreshToken: string; user: User }> {
         const user = await this.userRepo.findById(userId);
         if (!user) throw new AppError('User not found', 404);
 
@@ -176,8 +182,9 @@ export class AuthService {
 
         if (!isValid) throw new AppError('Invalid code', 400);
 
-        const token = this.generateToken(user);
-        return { token, user };
+        const token = this.generateAccessToken(user);
+        const refreshToken = this.generateRefreshToken(user);
+        return { token, refreshToken, user };
     }
 
 
@@ -200,7 +207,7 @@ export class AuthService {
     }
 
 
-    async verifyBackupCode(userId: string, code: string): Promise<{ token: string; user: User }> {
+    async verifyBackupCode(userId: string, code: string): Promise<{ token: string; refreshToken: string; user: User }> {
         const user = await this.userRepo.findById(userId);
         if (!user) throw new AppError('User not found', 404);
 
@@ -212,17 +219,48 @@ export class AuthService {
         user.disable2FA();
         await this.userRepo.save(user);
 
-        const token = this.generateToken(user);
-        return { token, user };
+        const token = this.generateAccessToken(user);
+        const refreshToken = this.generateRefreshToken(user);
+        return { token, refreshToken, user };
     }
 
-    private generateToken(user: User): string {
+    async refreshToken(token: string): Promise<{ token: string }> {
+        const config = ConfigLoader.getInstance();
+        const secret = config.get('auth.jwt.secret');
+
+        try {
+            const payload = jwt.verify(token, secret) as any;
+
+            // In a real app, you might want to check a whitelist/database for the refresh token
+            // or use a different secret for refresh tokens.
+
+            const user = await this.userRepo.findById(payload.userId);
+            if (!user) throw new AppError('User not found', 404);
+
+            const newAccessToken = this.generateAccessToken(user);
+            return { token: newAccessToken };
+        } catch (err) {
+            throw new AppError('Invalid refresh token', 401);
+        }
+    }
+
+    private generateAccessToken(user: User): string {
         const config = ConfigLoader.getInstance();
         const secret = config.get('auth.jwt.secret');
         return jwt.sign(
             { userId: user.id, email: user.email },
             secret,
             { expiresIn: config.get('auth.jwt.accessTokenExpiry') }
+        );
+    }
+
+    private generateRefreshToken(user: User): string {
+        const config = ConfigLoader.getInstance();
+        const secret = config.get('auth.jwt.secret');
+        return jwt.sign(
+            { userId: user.id, purpose: 'refresh' },
+            secret,
+            { expiresIn: config.get('auth.jwt.refreshTokenExpiry') }
         );
     }
 
