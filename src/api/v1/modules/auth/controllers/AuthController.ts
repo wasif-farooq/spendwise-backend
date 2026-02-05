@@ -113,4 +113,19 @@ export class AuthController {
         }
         res.json(result);
     }
+
+    async changePassword(req: Request, res: Response) {
+        const userId = (req as any).user?.userId || (req as any).user?.sub;
+        if (!userId) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+
+        const result = await this.authRequestRepository.changePassword(userId, req.body);
+        if (result.error) {
+            res.status(result.statusCode || 400).json({ message: result.error });
+            return;
+        }
+        res.json(result);
+    }
 }

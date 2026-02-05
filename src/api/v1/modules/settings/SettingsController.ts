@@ -1,23 +1,24 @@
 import { NextFunction, Request, Response } from 'express';
-import { Inject } from '@core/di/decorators/inject.decorator';
-import { UserPreferencesService } from '@modules/users/services/UserPreferencesService';
-import { AuthService } from '@modules/auth/services/AuthService';
-import { UpdateUserPreferencesSchema } from '@modules/users/dto/user-preferences.dto';
-import { ChangePasswordSchema, Enable2FASchema } from '@modules/auth/dto/auth.dto';
+import { UserRequestRepository } from '../users/repositories/UserRequestRepository';
+import { AuthRequestRepository } from '../auth/repositories/AuthRequestRepository';
 import { AppError } from '@core/api/utils/AppError';
-
 
 export class SettingsController {
     constructor(
-        @Inject('UserPreferencesService') private userPreferencesService: UserPreferencesService,
-        @Inject('AuthService') private authService: AuthService
+        private userRequestRepository: UserRequestRepository,
+        private authRequestRepository: AuthRequestRepository
     ) { }
 
     async getPreferences(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id; // handle different jwt payloads
-            const preferences = await this.userPreferencesService.getPreferences(userId);
-            res.json({ data: preferences.toDTO() });
+            const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
+            const result = await this.userRequestRepository.getPreferences(userId);
+
+            if (result.error) {
+                throw new AppError(result.error, result.statusCode || 400);
+            }
+
+            res.json({ data: result });
         } catch (error) {
             next(error);
         }
@@ -25,15 +26,14 @@ export class SettingsController {
 
     async updatePreferences(req: Request, res: Response, next: NextFunction) {
         try {
-            const validation = UpdateUserPreferencesSchema.safeParse(req.body);
-            if (!validation.success) {
-                throw new AppError('Invalid input: ' + JSON.stringify(validation.error.format()), 400);
+            const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
+            const result = await this.userRequestRepository.updatePreferences(userId, req.body);
 
+            if (result.error) {
+                throw new AppError(result.error, result.statusCode || 400);
             }
 
-            const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
-            const preferences = await this.userPreferencesService.updatePreferences(userId, validation.data);
-            res.json({ data: preferences.toDTO() });
+            res.json({ data: result });
         } catch (error) {
             next(error);
         }
@@ -42,12 +42,16 @@ export class SettingsController {
     async getSecuritySettings(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
-            const user = await (this.authService as any).getUserById(userId);
+            const result = await this.authRequestRepository.getMe(userId);
+
+            if (result.error) {
+                throw new AppError(result.error, result.statusCode || 400);
+            }
 
             res.json({
                 data: {
-                    twoFactorEnabled: user.twoFactorEnabled || false,
-                    twoFactorMethod: user.twoFactorMethod,
+                    twoFactorEnabled: result.twoFactorEnabled || false,
+                    twoFactorMethod: result.twoFactorMethod,
                 }
             });
         } catch (error) {
@@ -57,13 +61,12 @@ export class SettingsController {
 
     async changePassword(req: Request, res: Response, next: NextFunction) {
         try {
-            const validation = ChangePasswordSchema.safeParse(req.body);
-            if (!validation.success) {
-                throw new AppError('Invalid input: ' + JSON.stringify(validation.error.format()), 400);
-            }
-
             const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
-            await this.authService.changePassword(userId, validation.data.oldPassword, validation.data.newPassword);
+            const result = await this.authRequestRepository.changePassword(userId, req.body);
+
+            if (result.error) {
+                throw new AppError(result.error, result.statusCode || 400);
+            }
 
             res.json({ message: 'Password changed successfully' });
         } catch (error) {
@@ -74,9 +77,13 @@ export class SettingsController {
     async setup2FA(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
-            const setup = await this.authService.generate2FASecret(userId);
+            const result = await this.authRequestRepository.generate2FASecret(userId);
 
-            res.json({ data: setup });
+            if (result.error) {
+                throw new AppError(result.error, result.statusCode || 400);
+            }
+
+            res.json({ data: result });
         } catch (error) {
             next(error);
         }
@@ -84,13 +91,12 @@ export class SettingsController {
 
     async enable2FA(req: Request, res: Response, next: NextFunction) {
         try {
-            const validation = Enable2FASchema.safeParse(req.body);
-            if (!validation.success) {
-                throw new AppError('Invalid code format', 400);
-            }
-
             const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
-            await this.authService.enable2FA(userId, validation.data.code);
+            const result = await this.authRequestRepository.enable2FA(userId, req.body.code);
+
+            if (result.error) {
+                throw new AppError(result.error, result.statusCode || 400);
+            }
 
             res.json({ message: '2FA enabled successfully' });
         } catch (error) {
@@ -101,7 +107,11 @@ export class SettingsController {
     async disable2FA(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
-            await this.authService.disable2FA(userId);
+            const result = await this.authRequestRepository.disable2FA(userId);
+
+            if (result.error) {
+                throw new AppError(result.error, result.statusCode || 400);
+            }
 
             res.json({ message: '2FA disabled successfully' });
         } catch (error) {

@@ -34,5 +34,6 @@ router.post('/forgot-password', validate(forgotPasswordSchema), controller.forgo
 router.post('/verify-reset-code', validate(verifyResetCodeSchema), controller.verifyResetCode.bind(controller));
 router.post('/reset-password', validate(resetPasswordSchema), controller.resetPassword.bind(controller));
 router.post('/verify-email', validate(verifyEmailSchema), controller.verifyEmail.bind(controller));
+router.put('/change-password', requireAuth, controller.changePassword.bind(controller));
 
 export default router;

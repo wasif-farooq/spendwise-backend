@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { requireAuth } from '@core/api/middleware/auth.middleware';
 import { SettingsController } from './SettingsController';
+import { UserRequestRepository } from '../users/repositories/UserRequestRepository';
+import { AuthRequestRepository } from '../auth/repositories/AuthRequestRepository';
 import { Container } from '@core/di/Container';
 import { TOKENS } from '@core/di/tokens';
 
@@ -8,10 +10,10 @@ const router = Router();
 
 // Resolve dependencies
 const container = Container.getInstance();
-const userPreferencesService = container.resolve<any>(TOKENS.UserPreferencesService);
-const authService = container.resolve<any>(TOKENS.AuthService);
+const userRequestRepository = new UserRequestRepository();
+const authRequestRepository = new AuthRequestRepository();
 
-const controller = new SettingsController(userPreferencesService, authService);
+const controller = new SettingsController(userRequestRepository, authRequestRepository);
 
 router.use(requireAuth);
 

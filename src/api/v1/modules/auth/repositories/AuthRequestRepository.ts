@@ -54,4 +54,20 @@ export class AuthRequestRepository {
     async refresh(dto: { refreshToken: string }) {
         return this.rpcClient.request('auth.service.refresh', dto);
     }
+
+    async changePassword(userId: string, dto: any) {
+        return this.rpcClient.request('auth.service.change-password', { userId, ...dto });
+    }
+
+    async generate2FASecret(userId: string) {
+        return this.rpcClient.request('auth.service.generate-2fa-secret', { userId });
+    }
+
+    async enable2FA(userId: string, code: string) {
+        return this.rpcClient.request('auth.service.enable-2fa', { userId, code });
+    }
+
+    async disable2FA(userId: string) {
+        return this.rpcClient.request('auth.service.disable-2fa', { userId });
+    }
 }

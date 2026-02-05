@@ -17,4 +17,12 @@ export class UserRequestRepository {
     async updateProfile(userId: string, data: any) {
         return this.rpcClient.request('user.service.updateProfile', { userId, ...data });
     }
+
+    async getPreferences(userId: string) {
+        return this.rpcClient.request('user.service.getPreferences', { userId });
+    }
+
+    async updatePreferences(userId: string, data: any) {
+        return this.rpcClient.request('user.service.updatePreferences', { userId, ...data });
+    }
 }

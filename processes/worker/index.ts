@@ -50,10 +50,16 @@ const startWorker = async () => {
     await consumer.subscribe({ topic: 'auth.service.reset-password', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.verify-email', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.get-me', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.change-password', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.generate-2fa-secret', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.enable-2fa', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.disable-2fa', fromBeginning: false });
 
     // Subscribe to User Topics
     await consumer.subscribe({ topic: 'user.service.getProfile', fromBeginning: false });
     await consumer.subscribe({ topic: 'user.service.updateProfile', fromBeginning: false });
+    await consumer.subscribe({ topic: 'user.service.getPreferences', fromBeginning: false });
+    await consumer.subscribe({ topic: 'user.service.updatePreferences', fromBeginning: false });
 
     // Subscribe to Organization Topics
     await consumer.subscribe({ topic: 'organization.service.update', fromBeginning: false });
@@ -113,6 +119,18 @@ const startWorker = async () => {
                 } else if (topic === 'auth.service.get-me') {
                     console.log(`[Auth] Processing GetMe for ${correlationId}`);
                     result = await authService.getUserById(payload.userId);
+                } else if (topic === 'auth.service.change-password') {
+                    console.log(`[Auth] Processing Change Password for ${correlationId}`);
+                    result = await authService.changePassword(payload.userId, payload.oldPassword, payload.newPassword);
+                } else if (topic === 'auth.service.generate-2fa-secret') {
+                    console.log(`[Auth] Processing Generate 2FA Secret for ${correlationId}`);
+                    result = await authService.generate2FASecret(payload.userId);
+                } else if (topic === 'auth.service.enable-2fa') {
+                    console.log(`[Auth] Processing Enable 2FA for ${correlationId}`);
+                    result = await authService.enable2FA(payload.userId, payload.code);
+                } else if (topic === 'auth.service.disable-2fa') {
+                    console.log(`[Auth] Processing Disable 2FA for ${correlationId}`);
+                    result = await authService.disable2FA(payload.userId);
                 }
 
                 // --- User Handling ---
@@ -123,6 +141,15 @@ const startWorker = async () => {
                     console.log(`[User] Processing UpdateProfile for ${correlationId}`);
                     const { userId, ...data } = payload;
                     result = await userService.updateProfile(userId, data);
+                } else if (topic === 'user.service.getPreferences') {
+                    console.log(`[User] Processing GetPreferences for ${correlationId}`);
+                    const pref = await (authService as any).userPreferencesService.getPreferences(payload.userId);
+                    result = pref.toDTO();
+                } else if (topic === 'user.service.updatePreferences') {
+                    console.log(`[User] Processing UpdatePreferences for ${correlationId}`);
+                    const { userId, ...data } = payload;
+                    const pref = await (authService as any).userPreferencesService.updatePreferences(userId, data);
+                    result = pref.toDTO();
                 }
 
                 // --- Organization Handling ---
@@ -168,7 +195,7 @@ const startWorker = async () => {
                 await producer.send({
                     topic: replyTo,
                     messages: [{
-                        value: JSON.stringify(result),
+                        value: JSON.stringify(result ?? { success: true }),
                         headers: { correlationId }
                     }]
                 });
