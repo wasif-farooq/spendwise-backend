@@ -89,6 +89,18 @@ export class OrganizationController {
         res.json(result);
     }
 
+    async createRole(req: Request, res: Response) {
+        const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
+        const orgId = req.params.id;
+        const result = await this.organizationRequestRepository.createRole(orgId, userId, req.body);
+
+        if (result.error) {
+            res.status(result.statusCode || 400).json({ message: result.error });
+            return;
+        }
+        res.status(201).json(result);
+    }
+
     async updateRole(req: Request, res: Response) {
         const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
         const orgId = req.params.id;

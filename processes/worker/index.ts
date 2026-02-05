@@ -109,7 +109,7 @@ const startWorker = async () => {
                     result = await authService.resetPassword(payload.token, payload.newPassword);
                 } else if (topic === 'auth.service.verify-email') {
                     console.log(`[Auth] Processing Verify Email for ${correlationId}`);
-                    result = await authService.verifyEmail(payload.userId, payload.code);
+                    result = await authService.verifyEmail(payload.email, payload.code);
                 } else if (topic === 'auth.service.get-me') {
                     console.log(`[Auth] Processing GetMe for ${correlationId}`);
                     result = await authService.getUserById(payload.userId);

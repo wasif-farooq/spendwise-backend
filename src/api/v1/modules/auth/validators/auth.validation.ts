@@ -60,7 +60,7 @@ export const resetPasswordSchema = z.object({
 
 export const verifyEmailSchema = z.object({
     body: z.object({
-        userId: z.string().uuid(),
+        email: z.string().email(),
         code: z.string().length(6),
     }),
 });

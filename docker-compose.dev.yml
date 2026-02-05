@@ -11,6 +11,10 @@ services:
     ports:
       - "5432:5432"
 
+  prometheus:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   redis:
     ports:
       - "6379:6379"

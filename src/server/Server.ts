@@ -6,6 +6,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import { ConfigLoader } from '@core/config/ConfigLoader';
 import { StructuredLogger } from '@core/monitoring/logging/StructuredLogger';
+import { MetricsService } from '@core/monitoring/MetricsService';
 import { LogStream } from '@core/monitoring/logging/LogStream';
 import { versionMiddleware } from '@core/api/versioning/middleware/version.middleware';
 import { ApiRouter } from '@core/api/routes/ApiRouter';
@@ -43,6 +44,13 @@ export class Server {
     private configureRoutes() {
         this.app.get('/health', (req, res) => {
             res.json({ status: 'ok', timestamp: new Date(), service: 'API Gateway' });
+        });
+
+        // Metrics endpoint
+        this.app.get('/metrics', async (req, res) => {
+            const metricsService = MetricsService.getInstance();
+            res.set('Content-Type', metricsService.getContentType());
+            res.send(await metricsService.getMetrics());
         });
 
         // Mount API Router here

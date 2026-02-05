@@ -25,11 +25,13 @@
         "migrate:v1": "npm run migrate -- --version=v1",
         "migrate:v2": "npm run migrate -- --version=v2",
         "seed": "ts-node -r tsconfig-paths/register scripts/database/seed.ts",
-        "docker:up": "docker-compose up -d",
-        "docker:down": "docker-compose down",
-        "docker:logs": "docker-compose logs -f",
-        "docker:build": "docker-compose build",
-        "docker:prod": "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
+        "docker:up": "docker compose up -d",
+        "docker:down": "docker compose down",
+        "docker:logs": "docker compose logs -f",
+        "docker:build": "docker compose build",
+        "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d",
+        "docker:dev:ps": "docker compose -f docker-compose.yml -f docker-compose.dev.yml ps",
+        "docker:prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build",
         "kafka:topics": "bash scripts/kafka/create-topics.sh",
         "docs:generate": "npm run docs:generate:v1 && npm run docs:generate:v2",
         "docs:generate:v1": "ts-node -r tsconfig-paths/register scripts/docs/generate-openapi.ts --version=v1",
@@ -70,7 +72,8 @@
         "uuid": "^9.0.1",
         "winston": "^3.11.0",
         "yaml": "^2.3.4",
-        "zod": "^3.22.4"
+        "zod": "^3.22.4",
+        "tsconfig-paths": "^4.2.0"
     },
     "devDependencies": {
         "@types/bcrypt": "^5.0.2",
@@ -98,7 +101,6 @@
         "supertest": "^7.2.2",
         "ts-jest": "^29.1.1",
         "ts-node": "^10.9.1",
-        "tsconfig-paths": "^4.2.0",
         "typescript": "^5.3.3"
     }
 }

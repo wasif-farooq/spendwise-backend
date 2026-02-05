@@ -39,6 +39,10 @@ export class OrganizationRequestRepository {
         return this.rpcClient.request('organization.service.get-roles', { orgId, userId });
     }
 
+    async createRole(orgId: string, userId: string, dto: any) {
+        return this.rpcClient.request('organization.service.create-role', { orgId, userId, ...dto });
+    }
+
     async updateRole(orgId: string, userId: string, roleId: string, dto: any) {
         return this.rpcClient.request('organization.service.update-role', { orgId, userId, roleId, ...dto });
     }

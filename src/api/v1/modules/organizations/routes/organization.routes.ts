@@ -25,6 +25,7 @@ router.delete('/:id/members/:memberId', requirePermission('members:delete'), con
 router.put('/:id/members/:memberId/role', requirePermission('members:edit'), controller.assignRole.bind(controller));
 
 router.get('/:id/roles', requirePermission('roles:view'), controller.getRoles.bind(controller));
+router.post('/:id/roles', requirePermission('roles:create'), controller.createRole.bind(controller));
 router.put('/:id/roles/:roleId', requirePermission('roles:edit'), controller.updateRole.bind(controller));
 router.delete('/:id/roles/:roleId', requirePermission('roles:delete'), controller.deleteRole.bind(controller));
 

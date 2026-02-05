@@ -105,8 +105,9 @@ export class AuthService {
         return { user };
     }
 
-    async verifyEmail(userId: string, code: string): Promise<void> {
-        const user = await this.userRepo.findById(userId);
+    async verifyEmail(emailStr: string, code: string): Promise<void> {
+        const email = Email.create(emailStr);
+        const user = await this.userRepo.findByEmail(email.raw);
         if (!user) throw new AppError('User not found', 404);
 
         if (user.emailVerified) {

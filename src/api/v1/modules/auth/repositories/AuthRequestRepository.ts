@@ -43,7 +43,7 @@ export class AuthRequestRepository {
         return this.rpcClient.request('auth.service.reset-password', dto);
     }
 
-    async verifyEmail(dto: { userId: string, code: string }) {
+    async verifyEmail(dto: { email: string, code: string }) {
         return this.rpcClient.request('auth.service.verify-email', dto);
     }
 
