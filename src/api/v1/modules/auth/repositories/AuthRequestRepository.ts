@@ -59,15 +59,35 @@ export class AuthRequestRepository {
         return this.rpcClient.request('auth.service.change-password', { userId, ...dto });
     }
 
-    async generate2FASecret(userId: string) {
-        return this.rpcClient.request('auth.service.generate-2fa-secret', { userId });
+    async generate2FASecret(userId: string, method: string = 'app') {
+        return this.rpcClient.request('auth.service.generate-2fa-secret', { userId, method });
     }
 
-    async enable2FA(userId: string, code: string) {
-        return this.rpcClient.request('auth.service.enable-2fa', { userId, code });
+    async enable2FA(userId: string, code: string, method: string = 'app') {
+        return this.rpcClient.request('auth.service.enable-2fa', { userId, code, method });
     }
 
     async disable2FA(userId: string) {
         return this.rpcClient.request('auth.service.disable-2fa', { userId });
+    }
+
+    async disable2FAMethod(userId: string, method: string) {
+        return this.rpcClient.request('auth.service.disable-2fa-method', { userId, method });
+    }
+
+    async regenerateBackupCodes(userId: string) {
+        return this.rpcClient.request('auth.service.regenerate-backup-codes', { userId });
+    }
+
+    async getActiveSessions(userId: string) {
+        return this.rpcClient.request('auth.service.get-active-sessions', { userId });
+    }
+
+    async revokeSession(userId: string, sessionId: string) {
+        return this.rpcClient.request('auth.service.revoke-session', { userId, sessionId });
+    }
+
+    async getLoginHistory(userId: string) {
+        return this.rpcClient.request('auth.service.get-login-history', { userId });
     }
 }

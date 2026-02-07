@@ -27,7 +27,10 @@ export class Server {
     }
 
     private configureMiddleware() {
-        this.app.use(helmet());
+        this.app.use(helmet({
+            crossOriginResourcePolicy: false,
+            crossOriginOpenerPolicy: false,
+        }));
         this.app.use(cors(this.config.get('server.cors')));
         this.app.use(compression());
         this.app.use(express.json());

@@ -18,7 +18,8 @@ export class UserMapper {
             twoFactorEnabled: row.two_factor_enabled,
             twoFactorMethod: row.two_factor_method,
             twoFactorSecret: row.two_factor_secret,
-            backupCodes: row.backup_codes
+            backupCodes: row.backup_codes,
+            twoFactorMethods: row.two_factor_methods
         }, row.id);
     }
 }

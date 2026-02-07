@@ -24,6 +24,13 @@ router.put('/change-password', controller.changePassword.bind(controller));
 router.post('/2fa/setup', controller.setup2FA.bind(controller));
 router.post('/2fa/enable', controller.enable2FA.bind(controller));
 router.post('/2fa/disable', controller.disable2FA.bind(controller));
+router.delete('/2fa/methods/:method', controller.delete2FAMethod.bind(controller));
+router.post('/2fa/regenerate-codes', controller.regenerateBackupCodes.bind(controller));
+
+// Session & History
+router.get('/sessions', controller.getActiveSessions.bind(controller));
+router.post('/sessions/:sessionId/revoke', controller.revokeSession.bind(controller));
+router.get('/login-history', controller.getLoginHistory.bind(controller));
 
 
 export default router;

@@ -54,6 +54,10 @@ const startWorker = async () => {
     await consumer.subscribe({ topic: 'auth.service.generate-2fa-secret', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.enable-2fa', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.disable-2fa', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.regenerate-backup-codes', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.get-active-sessions', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.revoke-session', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.get-login-history', fromBeginning: false });
 
     // Subscribe to User Topics
     await consumer.subscribe({ topic: 'user.service.getProfile', fromBeginning: false });
@@ -96,14 +100,14 @@ const startWorker = async () => {
                     result = await authService.register(payload);
                 } else if (topic === 'auth.service.verify-2fa') {
                     console.log(`[Auth] Processing Verify 2FA for ${correlationId}`);
-                    // Note: verify2FA expects (userId, code, method)
-                    result = await authService.verify2FA(payload.userId, payload.code, payload.method);
+                    // Note: verify2FA expects (tempToken, code, method)
+                    result = await authService.verify2FA(payload.tempToken, payload.code, payload.method);
                 } else if (topic === 'auth.service.resend-2fa') {
                     console.log(`[Auth] Processing Resend 2FA for ${correlationId}`);
-                    result = await authService.resend2FA(payload.userId, payload.method);
+                    result = await authService.resend2FA(payload.tempToken, payload.method);
                 } else if (topic === 'auth.service.verify-backup-code') {
                     console.log(`[Auth] Processing Verify Backup Code for ${correlationId}`);
-                    result = await authService.verifyBackupCode(payload.userId, payload.code);
+                    result = await authService.verifyBackupCode(payload.tempToken, payload.code);
                 } else if (topic === 'auth.service.forgot-password') {
                     console.log(`[Auth] Processing Forgot Password for ${correlationId}`);
                     result = await authService.forgotPassword(payload.email);
@@ -124,13 +128,28 @@ const startWorker = async () => {
                     result = await authService.changePassword(payload.userId, payload.oldPassword, payload.newPassword);
                 } else if (topic === 'auth.service.generate-2fa-secret') {
                     console.log(`[Auth] Processing Generate 2FA Secret for ${correlationId}`);
-                    result = await authService.generate2FASecret(payload.userId);
+                    result = await authService.generate2FASecret(payload.userId, payload.method);
                 } else if (topic === 'auth.service.enable-2fa') {
                     console.log(`[Auth] Processing Enable 2FA for ${correlationId}`);
-                    result = await authService.enable2FA(payload.userId, payload.code);
+                    result = await authService.enable2FA(payload.userId, payload.code, payload.method);
                 } else if (topic === 'auth.service.disable-2fa') {
                     console.log(`[Auth] Processing Disable 2FA for ${correlationId}`);
                     result = await authService.disable2FA(payload.userId);
+                } else if (topic === 'auth.service.disable-2fa-method') {
+                    console.log(`[Auth] Processing Disable 2FA Method for ${correlationId}`);
+                    result = await authService.disable2FAMethod(payload.userId, payload.method);
+                } else if (topic === 'auth.service.regenerate-backup-codes') {
+                    console.log(`[Auth] Processing Regenerate Backup Codes for ${correlationId}`);
+                    result = await authService.regenerateBackupCodes(payload.userId);
+                } else if (topic === 'auth.service.get-active-sessions') {
+                    console.log(`[Auth] Processing Get Active Sessions for ${correlationId}`);
+                    result = await authService.getActiveSessions(payload.userId);
+                } else if (topic === 'auth.service.revoke-session') {
+                    console.log(`[Auth] Processing Revoke Session for ${correlationId}`);
+                    result = await authService.revokeSession(payload.userId, payload.sessionId);
+                } else if (topic === 'auth.service.get-login-history') {
+                    console.log(`[Auth] Processing Get Login History for ${correlationId}`);
+                    result = await authService.getLoginHistory(payload.userId);
                 }
 
                 // --- User Handling ---

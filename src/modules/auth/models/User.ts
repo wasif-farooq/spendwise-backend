@@ -18,8 +18,9 @@ export interface UserProps {
     deletedAt?: Date | null;
     // 2FA Properties
     twoFactorEnabled?: boolean;
-    twoFactorMethod?: 'app' | 'sms' | 'email';
-    twoFactorSecret?: string;
+    twoFactorMethod?: 'app' | 'sms' | 'email'; // Primary method
+    twoFactorMethods?: { type: 'app' | 'sms' | 'email'; verified: boolean }[];
+    twoFactorSecret?: string; // Secret for TOTP (app)
     backupCodes?: string[];
     // Email Verification
     emailVerified?: boolean;
@@ -73,6 +74,7 @@ export class User extends Entity<UserProps> {
     get twoFactorMethod(): string | undefined { return this.props.twoFactorMethod; }
     get twoFactorSecret(): string | undefined { return this.props.twoFactorSecret; }
     get backupCodes(): string[] { return this.props.backupCodes ?? []; }
+    get twoFactorMethods(): { type: 'app' | 'sms' | 'email'; verified: boolean }[] { return this.props.twoFactorMethods ?? []; }
     get emailVerified(): boolean { return this.props.emailVerified ?? false; }
     get emailVerificationCode(): string | undefined { return this.props.emailVerificationCode; }
     get emailVerifiedAt(): Date | undefined { return this.props.emailVerifiedAt; }
@@ -85,9 +87,49 @@ export class User extends Entity<UserProps> {
 
     public enable2FA(method: 'app' | 'sms' | 'email', secret: string, backupCodes: string[]) {
         this.props.twoFactorEnabled = true;
-        this.props.twoFactorMethod = method;
-        this.props.twoFactorSecret = secret;
+
+        // If it's the first method or explicitly being enabled, set it as active
+        if (!this.props.twoFactorMethod) {
+            this.props.twoFactorMethod = method;
+        }
+
+        // App method usually has a unique secret. SMS/Email might not need it stored here if handled differently.
+        if (method === 'app') {
+            this.props.twoFactorSecret = secret;
+        }
+
         this.props.backupCodes = backupCodes;
+
+        // Update methods array
+        const methods = this.props.twoFactorMethods || [];
+        const existing = methods.find(m => m.type === method);
+        if (existing) {
+            existing.verified = true;
+        } else {
+            methods.push({ type: method, verified: true });
+        }
+        this.props.twoFactorMethods = [...methods];
+
+        this.props.updatedAt = new Date();
+    }
+
+    public disableMethod(method: 'app' | 'sms' | 'email') {
+        const methods = this.props.twoFactorMethods || [];
+        this.props.twoFactorMethods = methods.filter(m => m.type !== method);
+
+        if (this.props.twoFactorMethod === method) {
+            const next = this.props.twoFactorMethods[0];
+            this.props.twoFactorMethod = next ? next.type : undefined;
+        }
+
+        if (this.props.twoFactorMethods.length === 0) {
+            this.disable2FA();
+        }
+
+        if (method === 'app') {
+            this.props.twoFactorSecret = undefined;
+        }
+
         this.props.updatedAt = new Date();
     }
 
@@ -96,6 +138,12 @@ export class User extends Entity<UserProps> {
         this.props.twoFactorMethod = undefined;
         this.props.twoFactorSecret = undefined;
         this.props.backupCodes = undefined;
+        this.props.twoFactorMethods = []; // Or keep them but mark unverified? disabling usually clears all.
+        this.props.updatedAt = new Date();
+    }
+
+    public updateBackupCodes(backupCodes: string[]) {
+        this.props.backupCodes = backupCodes;
         this.props.updatedAt = new Date();
     }
 

@@ -127,7 +127,14 @@ export class AuthService {
         };
     }
 
-    async login(dto: LoginDto): Promise<{ token?: string; refreshToken?: string; user: User; requires2FA?: boolean; twoFactorMethods?: string[] }> {
+    async login(dto: LoginDto): Promise<{
+        token?: string;
+        refreshToken?: string;
+        user: User;
+        requiresTwoFactor?: boolean;
+        availableMethods?: any[];
+        tempToken?: string;
+    }> {
         const email = Email.create(dto.email);
 
         const user = await this.userRepo.findByEmail(email.raw);
@@ -151,8 +158,13 @@ export class AuthService {
         if (user.twoFactorEnabled) {
             return {
                 user,
-                requires2FA: true,
-                twoFactorMethods: user.twoFactorMethod ? [user.twoFactorMethod] : []
+                requiresTwoFactor: true,
+                availableMethods: user.twoFactorMethods.map(m => ({
+                    type: m.type === 'app' ? 'authenticator' : m.type,
+                    enabled: true,
+                    verified: m.verified
+                })),
+                tempToken: user.id
             };
         }
 
@@ -166,8 +178,8 @@ export class AuthService {
         return { token, refreshToken, user };
     }
 
-    async verify2FA(userId: string, code: string, method?: string): Promise<{ token: string; refreshToken: string; user: User }> {
-        const user = await this.userRepo.findById(userId);
+    async verify2FA(tempToken: string, code: string, method?: string): Promise<{ token: string; refreshToken: string; user: User }> {
+        const user = await this.userRepo.findById(tempToken);
         if (!user) throw new AppError('User not found', 404);
 
         if (!user.twoFactorEnabled || !user.twoFactorSecret) {
@@ -188,11 +200,11 @@ export class AuthService {
     }
 
 
-    async resend2FA(userId: string, method: string): Promise<void> {
-        const user = await this.userRepo.findById(userId);
+    async resend2FA(tempToken: string, method: string): Promise<void> {
+        const user = await this.userRepo.findById(tempToken);
         if (!user) throw new AppError('User not found', 404);
 
-        if (method === 'app') {
+        if (method === 'authenticator' || method === 'app') {
             // Nothing to "resend" for app method usually, user just opens app.
             // But we can check if it's set up.
             if (!user.twoFactorEnabled) throw new AppError('2FA not enabled', 400);
@@ -207,8 +219,8 @@ export class AuthService {
     }
 
 
-    async verifyBackupCode(userId: string, code: string): Promise<{ token: string; refreshToken: string; user: User }> {
-        const user = await this.userRepo.findById(userId);
+    async verifyBackupCode(tempToken: string, code: string): Promise<{ token: string; refreshToken: string; user: User }> {
+        const user = await this.userRepo.findById(tempToken);
         if (!user) throw new AppError('User not found', 404);
 
         if (!user.backupCodes.includes(code)) {
@@ -365,41 +377,50 @@ export class AuthService {
         await this.authRepo.save(identity);
     }
 
-    async generate2FASecret(userId: string): Promise<{ secret: string; backupCodes: string[]; qrCode: string }> {
+    async generate2FASecret(userId: string, method: 'app' | 'sms' | 'email' = 'app'): Promise<{ secret: string; backupCodes: string[]; qrCode?: string }> {
         const user = await this.userRepo.findById(userId);
         if (!user) throw new AppError('User not found', 404);
 
-        const secret = speakeasy.generateSecret({
-            name: `SpendWise:${user.email}`,
-            issuer: 'SpendWise'
-        });
+        let secret: string;
+        let qrCode: string | undefined;
+
+        if (method === 'app') {
+            const specSecret = speakeasy.generateSecret({
+                name: `SpendWise:${user.email}`,
+                issuer: 'SpendWise'
+            });
+            secret = specSecret.base32;
+            qrCode = await QRCode.toDataURL(specSecret.otpauth_url || '');
+        } else {
+            // SMS or Email use a different kind of "secret" or temporary code
+            // For simplicity, we just generate a random string as the "secret" reference
+            secret = Math.floor(100000 + Math.random() * 900000).toString();
+        }
 
         const backupCodes = Array.from({ length: 8 }, () =>
             Math.floor(10000000 + Math.random() * 90000000).toString()
         );
 
-        // Generate QR code data URL
-        const qrCode = await QRCode.toDataURL(secret.otpauth_url || '');
-
         // Cache the secret and backup codes temporarily for verification step
         if (this.cache) {
-            await this.cache.set(`2fa_pending:${userId}`, JSON.stringify({
-                secret: secret.base32,
-                backupCodes
+            await this.cache.set(`2fa_pending:${userId}:${method}`, JSON.stringify({
+                secret,
+                backupCodes,
+                method
             }), { EX: 600 });
         }
 
         return {
-            secret: secret.base32,
+            secret,
             backupCodes,
             qrCode
         };
     }
 
-    async enable2FA(userId: string, code: string): Promise<void> {
+    async enable2FA(userId: string, code: string, method: 'app' | 'sms' | 'email' = 'app'): Promise<void> {
         let pending: any = null;
         if (this.cache) {
-            const data = await this.cache.get(`2fa_pending:${userId}`);
+            const data = await this.cache.get(`2fa_pending:${userId}:${method}`);
             if (data) pending = JSON.parse(data);
         }
 
@@ -407,11 +428,17 @@ export class AuthService {
             throw new AppError('2FA setup session expired or not found', 400);
         }
 
-        const isValid = speakeasy.totp.verify({
-            secret: pending.secret,
-            encoding: 'base32',
-            token: code
-        });
+        let isValid = false;
+        if (method === 'app') {
+            isValid = speakeasy.totp.verify({
+                secret: pending.secret,
+                encoding: 'base32',
+                token: code
+            });
+        } else {
+            // SMS/Email check if code matches the temporary secret
+            isValid = pending.secret === code;
+        }
 
         if (!isValid) throw new AppError('Invalid code', 400);
 
@@ -419,12 +446,12 @@ export class AuthService {
         if (!user) throw new AppError('User not found', 404);
 
         // Enable 2FA
-        user.enable2FA('app', pending.secret, pending.backupCodes);
+        user.enable2FA(method, pending.secret, pending.backupCodes);
         await this.userRepo.save(user);
 
         // Clear cache
         if (this.cache) {
-            await this.cache.del(`2fa_pending:${userId}`);
+            await this.cache.del(`2fa_pending:${userId}:${method}`);
         }
     }
 
@@ -435,5 +462,86 @@ export class AuthService {
 
         user.disable2FA();
         await this.userRepo.save(user);
+    }
+
+    async disable2FAMethod(userId: string, method: 'app' | 'sms' | 'email'): Promise<void> {
+        const user = await this.userRepo.findById(userId);
+        if (!user) throw new AppError('User not found', 404);
+
+        user.disableMethod(method);
+        await this.userRepo.save(user);
+    }
+
+    async regenerateBackupCodes(userId: string): Promise<string[]> {
+        const user = await this.userRepo.findById(userId);
+        if (!user) throw new AppError('User not found', 404);
+
+        if (!user.twoFactorEnabled) {
+            throw new AppError('2FA is not enabled', 400);
+        }
+
+        const backupCodes = Array.from({ length: 8 }, () =>
+            Math.floor(10000000 + Math.random() * 90000000).toString()
+        );
+
+        user.updateBackupCodes(backupCodes);
+        await this.userRepo.save(user);
+
+        return backupCodes;
+    }
+
+    async getActiveSessions(userId: string): Promise<any[]> {
+        // Mock session data as session repository doesn't exist yet
+        return [
+            {
+                id: 'current-session',
+                device: 'Chrome on macOS',
+                ip: '192.168.1.1',
+                lastActive: new Date().toISOString(),
+                isCurrent: true
+            },
+            {
+                id: 'other-session-1',
+                device: 'Safari on iPhone',
+                ip: '10.0.0.5',
+                lastActive: new Date(Date.now() - 3600000).toISOString(),
+                isCurrent: false
+            }
+        ];
+    }
+
+    async revokeSession(userId: string, sessionId: string): Promise<void> {
+        // Mock revoke session
+        console.log(`[Mock] Revoking session ${sessionId} for user ${userId}`);
+    }
+
+    async getLoginHistory(userId: string): Promise<any[]> {
+        // Mock login history
+        return [
+            {
+                id: 'history-1',
+                date: new Date().toISOString(),
+                status: 'success',
+                ip: '192.168.1.1',
+                location: 'San Francisco, US',
+                device: 'Chrome on macOS'
+            },
+            {
+                id: 'history-2',
+                date: new Date(Date.now() - 86400000).toISOString(),
+                status: 'success',
+                ip: '192.168.1.1',
+                location: 'San Francisco, US',
+                device: 'Chrome on macOS'
+            },
+            {
+                id: 'history-3',
+                date: new Date(Date.now() - 172800000).toISOString(),
+                status: 'failed',
+                ip: '45.12.3.4',
+                location: 'Moscow, RU',
+                device: 'Firefox on Linux'
+            }
+        ];
     }
 }
