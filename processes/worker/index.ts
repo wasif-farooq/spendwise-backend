@@ -54,6 +54,7 @@ const startWorker = async () => {
     await consumer.subscribe({ topic: 'auth.service.generate-2fa-secret', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.enable-2fa', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.disable-2fa', fromBeginning: false });
+    await consumer.subscribe({ topic: 'auth.service.disable-2fa-method', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.regenerate-backup-codes', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.get-active-sessions', fromBeginning: false });
     await consumer.subscribe({ topic: 'auth.service.revoke-session', fromBeginning: false });

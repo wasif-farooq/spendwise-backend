@@ -1,16 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { ConfigLoader } from '@core/config/ConfigLoader';
+import { StructuredLogger } from '@core/monitoring/logging/StructuredLogger';
+
+const logger = new StructuredLogger();
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 
-    console.log(`[AuthMiddleware] Received Header: ${authHeader ? 'Present' : 'Missing'}`);
+    logger.info(`[AuthMiddleware] URL: ${req.method} ${req.url}`);
+    logger.info(`[AuthMiddleware] All Headers: ${JSON.stringify(req.headers)}`);
+    logger.info(`[AuthMiddleware] Auth Header: ${authHeader ? 'Present' : 'Missing'}`);
+
     if (authHeader) {
         console.log(`[AuthMiddleware] Token (first 20 chars): ${authHeader.substring(0, 20)}...`);
     }
 
     if (!authHeader) {
+        console.warn(`[AuthMiddleware] 401 Unauthorized: No token provided for ${req.method} ${req.url}`);
         return res.status(401).json({ message: 'No token provided' });
     }
 

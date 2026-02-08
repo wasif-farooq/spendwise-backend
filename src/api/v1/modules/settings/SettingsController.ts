@@ -49,15 +49,28 @@ export class SettingsController {
             }
 
             // Map backend methods to frontend format
+            const is2FAEnabled = result.twoFactorEnabled || false;
             const availableMethods = [
-                { type: 'authenticator', enabled: result.twoFactorMethod === 'app', verified: (result.twoFactorMethods || []).some((m: any) => m.type === 'app' && m.verified) },
-                { type: 'sms', enabled: result.twoFactorMethod === 'sms', verified: (result.twoFactorMethods || []).some((m: any) => m.type === 'sms' && m.verified) },
-                { type: 'email', enabled: result.twoFactorMethod === 'email', verified: (result.twoFactorMethods || []).some((m: any) => m.type === 'email' && m.verified) }
+                {
+                    type: 'authenticator',
+                    enabled: is2FAEnabled && result.twoFactorMethod === 'app',
+                    verified: (result.twoFactorMethods || []).some((m: any) => m.type === 'app' && m.verified)
+                },
+                {
+                    type: 'sms',
+                    enabled: is2FAEnabled && result.twoFactorMethod === 'sms',
+                    verified: (result.twoFactorMethods || []).some((m: any) => m.type === 'sms' && m.verified)
+                },
+                {
+                    type: 'email',
+                    enabled: is2FAEnabled && result.twoFactorMethod === 'email',
+                    verified: (result.twoFactorMethods || []).some((m: any) => m.type === 'email' && m.verified)
+                }
             ];
 
             res.json({
                 data: {
-                    twoFactorEnabled: result.twoFactorEnabled || false,
+                    twoFactorEnabled: is2FAEnabled,
                     twoFactorMethod: result.twoFactorMethod === 'app' ? 'authenticator' : result.twoFactorMethod,
                     availableMethods
                 }
