@@ -35,8 +35,12 @@ export class OrganizationRequestRepository {
         return this.rpcClient.request('organization.service.remove-member', { orgId, userId, memberId });
     }
 
-    async getRoles(orgId: string, userId: string) {
-        return this.rpcClient.request('organization.service.get-roles', { orgId, userId });
+    async getRoles(orgId: string, userId: string, params: { page?: number; limit?: number; search?: string } = {}) {
+        return this.rpcClient.request('organization.service.get-roles', { orgId, userId, ...params });
+    }
+
+    async getRole(orgId: string, userId: string, roleId: string) {
+        return this.rpcClient.request('organization.service.get-role', { orgId, userId, roleId });
     }
 
     async createRole(orgId: string, userId: string, dto: any) {

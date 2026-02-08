@@ -2,6 +2,7 @@ import { Entity } from '../../../api/shared/domain/entities/Entity';
 
 export enum UserRole {
     CUSTOMER = 'customer',
+    PRO = 'pro',
     STAFF = 'staff',
     SUPER_ADMIN = 'SUPER_ADMIN'
 }
@@ -44,7 +45,7 @@ export class User extends Entity<UserProps> {
             ...props,
             isActive: true,
             status: props.status || 'active',
-            role: props.role || UserRole.CUSTOMER,
+            role: props.role || UserRole.PRO,
             createdAt: new Date(),
             updatedAt: new Date(),
             deletedAt: null,

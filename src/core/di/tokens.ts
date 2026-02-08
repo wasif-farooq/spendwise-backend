@@ -20,4 +20,8 @@ export const TOKENS = {
     FeatureFlagRepository: 'FeatureFlagRepository',
     FeatureFlagService: 'FeatureFlagService',
     FeatureFlagControllerFactory: 'FeatureFlagControllerFactory',
+    OrganizationRolesControllerFactory: 'OrganizationRolesControllerFactory',
+    SubscriptionPlanRepository: 'SubscriptionPlanRepository',
+    OrganizationSubscriptionRepository: 'OrganizationSubscriptionRepository',
+    SubscriptionService: 'SubscriptionService',
 };

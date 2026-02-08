@@ -9,7 +9,7 @@ export abstract class BaseRepository<T> {
         return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
     }
 
-    private mapToDb(data: any): any {
+    protected mapToDb(data: any): any {
         const mapped: any = {};
         for (const [key, value] of Object.entries(data)) {
             if (key === '_id') continue;

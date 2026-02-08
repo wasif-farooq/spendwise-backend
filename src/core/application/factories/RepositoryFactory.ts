@@ -8,6 +8,7 @@ import { OrganizationRoleRepository } from '@modules/organizations/repositories/
 import { OrganizationMembersRepository } from '@modules/organizations/repositories/OrganizationMembersRepository';
 import { UserPreferencesRepository } from '@modules/users/repositories/UserPreferencesRepository';
 import { FeatureFlagRepository } from '@modules/feature-flags/repositories/FeatureFlagRepository';
+import { SubscriptionPlanRepository, OrganizationSubscriptionRepository } from '@modules/subscription/repositories/SubscriptionRepository';
 
 
 export class RepositoryFactory {
@@ -39,5 +40,13 @@ export class RepositoryFactory {
 
     createFeatureFlagRepository(): FeatureFlagRepository {
         return new FeatureFlagRepository(this.db);
+    }
+
+    createSubscriptionPlanRepository(): SubscriptionPlanRepository {
+        return new SubscriptionPlanRepository(this.db);
+    }
+
+    createOrganizationSubscriptionRepository(): OrganizationSubscriptionRepository {
+        return new OrganizationSubscriptionRepository(this.db);
     }
 }

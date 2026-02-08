@@ -74,6 +74,8 @@ const startWorker = async () => {
     await consumer.subscribe({ topic: 'organization.service.invite-member', fromBeginning: false });
     await consumer.subscribe({ topic: 'organization.service.remove-member', fromBeginning: false });
     await consumer.subscribe({ topic: 'organization.service.get-roles', fromBeginning: false });
+    await consumer.subscribe({ topic: 'organization.service.get-role', fromBeginning: false });
+    await consumer.subscribe({ topic: 'organization.service.create-role', fromBeginning: false });
     await consumer.subscribe({ topic: 'organization.service.update-role', fromBeginning: false });
     await consumer.subscribe({ topic: 'organization.service.assign-role', fromBeginning: false });
     await consumer.subscribe({ topic: 'organization.service.delete-role', fromBeginning: false });
@@ -193,7 +195,13 @@ const startWorker = async () => {
                     result = await organizationService.removeMember(payload.orgId, payload.userId, payload.memberId);
                 } else if (topic === 'organization.service.get-roles') {
                     console.log(`[Org] Processing GetRoles for ${correlationId}`);
-                    result = await organizationService.getRoles(payload.orgId, payload.userId);
+                    result = await organizationService.getRoles(payload.orgId, payload.userId, payload);
+                } else if (topic === 'organization.service.get-role') {
+                    console.log(`[Org] Processing GetRole for ${correlationId}`);
+                    result = await organizationService.getRole(payload.orgId, payload.userId, payload.roleId);
+                } else if (topic === 'organization.service.create-role') {
+                    console.log(`[Org] Processing CreateRole for ${correlationId}`);
+                    result = await organizationService.createRole(payload.orgId, payload.userId, payload);
                 } else if (topic === 'organization.service.update-role') {
                     console.log(`[Org] Processing UpdateRole for ${correlationId}`);
                     result = await organizationService.updateRole(payload.orgId, payload.userId, payload.roleId, payload.permissions);

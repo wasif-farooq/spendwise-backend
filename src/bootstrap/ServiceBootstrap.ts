@@ -9,6 +9,7 @@ import { RepositoryFactory } from '@core/application/factories/RepositoryFactory
 import { ServiceFactory } from '@core/application/factories/ServiceFactory';
 import { AuthControllerFactory } from '@core/application/factories/AuthControllerFactory';
 import { OrganizationControllerFactory } from '@core/application/factories/OrganizationControllerFactory';
+import { OrganizationRolesControllerFactory } from '@core/application/factories/OrganizationRolesControllerFactory';
 import { UserControllerFactory } from '@core/application/factories/UserControllerFactory';
 import { TOKENS } from '@core/di/tokens';
 import { FeatureFlagControllerFactory } from '@core/application/factories/FeatureFlagControllerFactory';
@@ -68,6 +69,9 @@ export class ServiceBootstrap {
             const featureFlagControllerFactory = new FeatureFlagControllerFactory(serviceFactory);
             this.container.registerInstance(TOKENS.FeatureFlagControllerFactory, featureFlagControllerFactory);
 
+            const organizationRolesControllerFactory = new OrganizationRolesControllerFactory(serviceFactory);
+            this.container.registerInstance(TOKENS.OrganizationRolesControllerFactory, organizationRolesControllerFactory);
+
             const userPreferencesService = serviceFactory.createUserPreferencesService();
             this.container.registerInstance(TOKENS.UserPreferencesService, userPreferencesService);
 
@@ -82,6 +86,15 @@ export class ServiceBootstrap {
 
             const featureFlagService = serviceFactory.createFeatureFlagService();
             this.container.registerInstance(TOKENS.FeatureFlagService, featureFlagService);
+
+            const subPlanRepo = repoFactory.createSubscriptionPlanRepository();
+            this.container.registerInstance(TOKENS.SubscriptionPlanRepository, subPlanRepo);
+
+            const orgSubRepo = repoFactory.createOrganizationSubscriptionRepository();
+            this.container.registerInstance(TOKENS.OrganizationSubscriptionRepository, orgSubRepo);
+
+            const subscriptionService = serviceFactory.createSubscriptionService();
+            this.container.registerInstance(TOKENS.SubscriptionService, subscriptionService);
 
 
             // Connect Infrastructure

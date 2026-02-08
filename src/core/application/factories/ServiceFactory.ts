@@ -4,6 +4,7 @@ import { AuthService } from '@modules/auth/services/AuthService';
 import { UserService } from '@modules/users/services/UserService';
 import { UserPreferencesService } from '@modules/users/services/UserPreferencesService';
 import { FeatureFlagService } from '@modules/feature-flags/services/FeatureFlagService';
+import { SubscriptionService } from '@modules/subscription/services/SubscriptionService';
 import { DatabaseFacade } from '@core/application/facades/DatabaseFacade';
 
 
@@ -54,6 +55,13 @@ export class ServiceFactory {
     createFeatureFlagService(): FeatureFlagService {
         return new FeatureFlagService(
             this.repositoryFactory.createFeatureFlagRepository()
+        );
+    }
+
+    createSubscriptionService(): SubscriptionService {
+        return new SubscriptionService(
+            this.repositoryFactory.createSubscriptionPlanRepository(),
+            this.repositoryFactory.createOrganizationSubscriptionRepository()
         );
     }
 }

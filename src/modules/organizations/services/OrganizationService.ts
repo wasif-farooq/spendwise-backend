@@ -8,6 +8,8 @@ import { Organization } from '../models/Organization';
 import { OrganizationMember } from '../models/OrganizationMember';
 import { AppError } from '@core/api/utils/AppError';
 import { UpdateOrganizationDto, InviteMemberDto } from '../dto/organization.dto';
+import { CreateRoleDto, UpdateRoleDto } from '../dto/role.dto';
+import { OrganizationRole } from '../models/OrganizationRole';
 
 export class OrganizationService {
     constructor(
@@ -111,11 +113,48 @@ export class OrganizationService {
         await this.organizationMembersRepository.delete(memberIdToRemove);
     }
 
-    async getRoles(orgId: string, userId: string): Promise<any[]> {
+    async getRoles(orgId: string, userId: string, params: { page?: number; limit?: number; search?: string } = {}): Promise<{ roles: any[]; total: number }> {
         const member = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
         if (!member) throw new AppError('Not a member of this organization', 403);
 
-        return this.organizationRoleRepository.findByOrg(orgId);
+        const page = params.page || 1;
+        const limit = params.limit || 10;
+        const offset = (page - 1) * limit;
+
+        const { roles, total } = await this.organizationRoleRepository.findPaginated(orgId, {
+            limit,
+            offset,
+            search: params.search
+        });
+
+        return { roles, total };
+    }
+    async getRole(orgId: string, userId: string, roleId: string): Promise<OrganizationRole> {
+        const member = await this.organizationMembersRepository.findByUserAndOrg(userId, orgId);
+        if (!member) throw new AppError('Not a member of this organization', 403);
+
+        const role = await this.organizationRoleRepository.findById(roleId);
+        if (!role || role.organizationId !== orgId) throw new AppError('Role not found', 404);
+
+        return role;
+    }
+
+    async createRole(orgId: string, userId: string, dto: CreateRoleDto): Promise<OrganizationRole> {
+        const hasPermission = await this.checkPermission(orgId, userId, 'roles:create');
+        if (!hasPermission) throw new AppError('Insufficient permissions to create roles', 403);
+
+        const existing = await this.organizationRoleRepository.findByNameAndOrg(dto.name, orgId);
+        if (existing) throw new AppError('Role name already exists in this organization', 400);
+
+        const role = OrganizationRole.create({
+            name: dto.name,
+            description: dto.description,
+            organizationId: orgId,
+            permissions: dto.permissions
+        });
+
+        await this.organizationRoleRepository.create(role);
+        return role;
     }
 
     async updateRole(orgId: string, userId: string, roleId: string, permissions: string[]): Promise<void> {
