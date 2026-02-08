@@ -19,7 +19,7 @@ export interface UserProps {
     // 2FA Properties
     twoFactorEnabled?: boolean;
     twoFactorMethod?: 'app' | 'sms' | 'email'; // Primary method
-    twoFactorMethods?: { type: 'app' | 'sms' | 'email'; verified: boolean }[];
+    twoFactorMethods?: { type: 'app' | 'sms' | 'email'; verified: boolean; target?: string }[];
     twoFactorSecret?: string; // Secret for TOTP (app)
     backupCodes?: string[];
     // Email Verification
@@ -74,7 +74,7 @@ export class User extends Entity<UserProps> {
     get twoFactorMethod(): string | undefined { return this.props.twoFactorMethod; }
     get twoFactorSecret(): string | undefined { return this.props.twoFactorSecret; }
     get backupCodes(): string[] { return this.props.backupCodes ?? []; }
-    get twoFactorMethods(): { type: 'app' | 'sms' | 'email'; verified: boolean }[] { return this.props.twoFactorMethods ?? []; }
+    get twoFactorMethods(): { type: 'app' | 'sms' | 'email'; verified: boolean; target?: string }[] { return this.props.twoFactorMethods ?? []; }
     get emailVerified(): boolean { return this.props.emailVerified ?? false; }
     get emailVerificationCode(): string | undefined { return this.props.emailVerificationCode; }
     get emailVerifiedAt(): Date | undefined { return this.props.emailVerifiedAt; }
@@ -85,7 +85,7 @@ export class User extends Entity<UserProps> {
         this.props.updatedAt = new Date();
     }
 
-    public enable2FA(method: 'app' | 'sms' | 'email', secret: string, backupCodes: string[]) {
+    public enable2FA(method: 'app' | 'sms' | 'email', secret: string, backupCodes: string[], target?: string) {
         this.props.twoFactorEnabled = true;
 
         // If it's the first method or explicitly being enabled, set it as active
@@ -105,8 +105,9 @@ export class User extends Entity<UserProps> {
         const existing = methods.find(m => m.type === method);
         if (existing) {
             existing.verified = true;
+            existing.target = target;
         } else {
-            methods.push({ type: method, verified: true });
+            methods.push({ type: method, verified: true, target });
         }
         this.props.twoFactorMethods = [...methods];
 

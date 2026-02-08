@@ -182,15 +182,33 @@ export class AuthService {
         const user = await this.userRepo.findById(tempToken);
         if (!user) throw new AppError('User not found', 404);
 
-        if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+        if (!user.twoFactorEnabled) {
             throw new AppError('2FA not enabled', 400);
         }
 
-        const isValid = speakeasy.totp.verify({
-            secret: user.twoFactorSecret,
-            encoding: 'base32',
-            token: code
-        });
+        let isValid = false;
+        const selectedMethod = method || user.twoFactorMethod;
+
+        if (selectedMethod === 'authenticator' || selectedMethod === 'app') {
+            if (!user.twoFactorSecret) throw new AppError('TOTP not set up', 400);
+            isValid = speakeasy.totp.verify({
+                secret: user.twoFactorSecret,
+                encoding: 'base32',
+                token: code
+            });
+        } else {
+            // SMS/Email
+            if (this.cache) {
+                const storedCode = await this.cache.get(`2fa_login:${user.id}:${selectedMethod}`);
+                isValid = storedCode === code;
+                if (isValid) {
+                    await this.cache.del(`2fa_login:${user.id}:${selectedMethod}`);
+                }
+            } else {
+                // Fallback for dev if cache missing (optional)
+                isValid = code === '123456';
+            }
+        }
 
         if (!isValid) throw new AppError('Invalid code', 400);
 
@@ -213,9 +231,18 @@ export class AuthService {
 
         // For SMS/Email:
         // 1. Generate new code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+
         // 2. Store in cache
+        if (this.cache) {
+            await this.cache.set(`2fa_login:${user.id}:${method}`, code, { EX: 600 });
+        }
+
         // 3. Send via provider
-        console.log(`[Mock] Resending 2FA code to ${user.email} via ${method}`);
+        const methodInfo = user.twoFactorMethods.find(m => m.type === method);
+        const target = methodInfo?.target || user.email;
+
+        console.log(`\n[2FA] [Mock] Resending 2FA code to ${target} via ${method}: ${code}\n`);
     }
 
 
@@ -377,7 +404,7 @@ export class AuthService {
         await this.authRepo.save(identity);
     }
 
-    async generate2FASecret(userId: string, method: 'app' | 'sms' | 'email' = 'app'): Promise<{ secret: string; backupCodes: string[]; qrCode?: string }> {
+    async generate2FASecret(userId: string, method: 'app' | 'sms' | 'email' = 'app', providedEmail?: string): Promise<{ secret?: string; backupCodes: string[]; qrCode?: string }> {
         const user = await this.userRepo.findById(userId);
         if (!user) throw new AppError('User not found', 404);
 
@@ -392,9 +419,25 @@ export class AuthService {
             secret = specSecret.base32;
             qrCode = await QRCode.toDataURL(specSecret.otpauth_url || '');
         } else {
-            // SMS or Email use a different kind of "secret" or temporary code
-            // For simplicity, we just generate a random string as the "secret" reference
+            // SMS or Email use a 6-digit code
             secret = Math.floor(100000 + Math.random() * 900000).toString();
+
+            if (method === 'email') {
+                const targetEmail = providedEmail || user.email;
+                console.log(`\n📧 [2FA Setup] [Mock Email] Sending 2FA setup code to ${targetEmail}: ${secret}\n`);
+                try {
+                    const mockPath = require('path').join(process.cwd(), 'mock_2fa_code.txt');
+                    require('fs').writeFileSync(mockPath, `[2FA Setup] Email: ${targetEmail}, Code: ${secret}`);
+                    console.log(`\n📄 [Mock] Code written to: ${mockPath}\n`);
+                } catch (e) { }
+            } else if (method === 'sms') {
+                console.log(`\n📱 [2FA Setup] [Mock SMS] Sending 2FA setup code to user ${userId}: ${secret}\n`);
+                try {
+                    const mockPath = require('path').join(process.cwd(), 'mock_2fa_code.txt');
+                    require('fs').writeFileSync(mockPath, `[2FA Setup] SMS: ${userId}, Code: ${secret}`);
+                    console.log(`\n📄 [Mock] Code written to: ${mockPath}\n`);
+                } catch (e) { }
+            }
         }
 
         const backupCodes = Array.from({ length: 8 }, () =>
@@ -406,12 +449,13 @@ export class AuthService {
             await this.cache.set(`2fa_pending:${userId}:${method}`, JSON.stringify({
                 secret,
                 backupCodes,
-                method
+                method,
+                target: method === 'email' ? providedEmail : undefined
             }), { EX: 600 });
         }
 
         return {
-            secret,
+            secret: method === 'app' ? secret : undefined, // Security: Don't return code for email/sms
             backupCodes,
             qrCode
         };
@@ -446,7 +490,7 @@ export class AuthService {
         if (!user) throw new AppError('User not found', 404);
 
         // Enable 2FA
-        user.enable2FA(method, pending.secret, pending.backupCodes);
+        user.enable2FA(method, pending.secret, pending.backupCodes, pending.target);
         await this.userRepo.save(user);
 
         // Clear cache

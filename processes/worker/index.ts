@@ -128,7 +128,7 @@ const startWorker = async () => {
                     result = await authService.changePassword(payload.userId, payload.oldPassword, payload.newPassword);
                 } else if (topic === 'auth.service.generate-2fa-secret') {
                     console.log(`[Auth] Processing Generate 2FA Secret for ${correlationId}`);
-                    result = await authService.generate2FASecret(payload.userId, payload.method);
+                    result = await authService.generate2FASecret(payload.userId, payload.method, payload.email);
                 } else if (topic === 'auth.service.enable-2fa') {
                     console.log(`[Auth] Processing Enable 2FA for ${correlationId}`);
                     result = await authService.enable2FA(payload.userId, payload.code, payload.method);

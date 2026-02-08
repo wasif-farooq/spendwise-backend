@@ -59,8 +59,8 @@ export class AuthRequestRepository {
         return this.rpcClient.request('auth.service.change-password', { userId, ...dto });
     }
 
-    async generate2FASecret(userId: string, method: string = 'app') {
-        return this.rpcClient.request('auth.service.generate-2fa-secret', { userId, method });
+    async generate2FASecret(userId: string, method: string = 'app', email?: string) {
+        return this.rpcClient.request('auth.service.generate-2fa-secret', { userId, method, email });
     }
 
     async enable2FA(userId: string, code: string, method: string = 'app') {

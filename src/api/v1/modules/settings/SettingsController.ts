@@ -85,8 +85,9 @@ export class SettingsController {
     async setup2FA(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = (req as any).user.userId || (req as any).user.sub || (req as any).user.id;
-            const method = req.body.method === 'authenticator' ? 'app' : req.body.method;
-            const result = await this.authRequestRepository.generate2FASecret(userId, method);
+            const { method: rawMethod, email } = req.body;
+            const method = rawMethod === 'authenticator' ? 'app' : rawMethod;
+            const result = await this.authRequestRepository.generate2FASecret(userId, method, email);
 
             if (result.error) {
                 throw new AppError(result.error, result.statusCode || 400);
